@@ -1,0 +1,60 @@
+{% extends 'base_file_upload.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block css%}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+{% endblock %}
+
+{% block content %}
+<div>
+  <div class="form-group">
+    <p>订单号:{{ order.po}}  款号:{{ order.style_no}}   工厂:{{ order.factory}}</p>
+    <p>出货日期:{{ order.handover_date_f |date:"Y/m/d"  }}    查货日期:  {{qr.created_date |date:"Y/m/d" }}    查货人员:  {{qr.created_by }}</p>
+  </div>
+
+{% for checkrecord in checkrecords%}
+  <div class="form-group d-flex flex-wrap align-items-end">
+    <p>检查项目:{{checkrecord.check_item.name}}/  编号:{{checkrecord.check_point.number}}/   名称:{{checkrecord.check_point.name}}/  等级:{{checkrecord.get_grade_display}}/    比列:{{checkrecord.ratio}}</p>
+  </div>
+  
+  <div class="form-group d-flex flex-wrap align-items-end">
+    {% for pic in checkrecord.pics.all %}
+        <a href="{{pic.file.url}}">
+        <img src="{{ pic.file.url}}" width=300 height=300 class="img-thumbnail"></a>    
+        <!-- {% if show == 1 %}
+            <a data-title="提示" class="delete" href="{% url 'order:checkrecordpicdelete' pk=pic.pk %}">
+            <i class="mx-2 far fa-trash-alt fa-1x"></i></a> 
+       {% endif %} -->
+    {% endfor %}
+  </div>
+{% endfor %}
+
+  <div class="form-group d-flex flex-wrap align-items-end">
+    <a href="{% url 'order:qcreportsum' pk=qr.pk %}"  class="col-3 btn btn-block btn-outline-primary p-1" role="button">返回</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<!-- 删除项目确认js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+<script>
+    $('a.delete').confirm({
+        content: "确定要删除此附件吗？",
+        icon: 'fa fa-warning',
+        typeAnimated: true,
+        buttons: {
+        确认: {
+            btnClass: 'btn-default',
+            action:function(){
+            location.href = this.$target.attr('href');
+            },},
+        取消: {
+            action:function () {
+            //close
+            },
+        }}
+    });
+</script>
+{% endblock %}

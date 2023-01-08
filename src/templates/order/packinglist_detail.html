@@ -1,0 +1,481 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load basename %}
+{% load crispy_forms_tags %}
+{% load widget_tweaks %}
+
+{% block css%}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+{% endblock%}
+
+
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-md-12">
+        {% include 'message.html'%}
+        <p style="font-weight: bolder; margin-bottom: 3px;">装箱单信息:{{order.packing_status.get_status_display}}</p>
+        <p style="font-weight: bolder; margin-bottom: 3px;">订单号:{{order.po}} &nbsp 款号:{{order.style_no}}
+            &nbsp 品牌:{{ order.brand}} &nbsp 工厂:{{order.factory}}
+            &nbsp工厂交期: {{order.handover_date_f |date:"SHORT_DATE_FORMAT"}}
+            &nbsp包装方式: {{order.packing_type}}
+        </p>
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="col-12 col-md-12">
+        <div class="table-responsive">
+            <table class="formdiv table table-sm table-bordered">
+                <p style="font-weight: bolder; margin-bottom: 3px;">纸箱规格、体积、重量</p>
+                <thead>
+                    <tr class="text-center">
+                        <th scope="col">长(cm)</th>
+                        <th scope="col">宽(cm)</th>
+                        <th scope="col">高(cm)</th>
+                        <th scope="col">体积(立方米)</th>
+                        <th scope="col">每箱毛重(公斤)</th>
+                    </tr>
+                    <tr class="text-center">
+                        <td scope="col">{{order.packing_status.length}}</td>
+                        <td scope="col">{{order.packing_status.width}}</td>
+                        <td scope="col">{{order.packing_status.height}}</td>
+                        <td scope="col">{{order.packing_status.cube}}</td>
+                        <td scope="col">{{order.packing_status.gross_weight}}</td>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12 col-md-12">
+        <div class="table-responsive">
+            <table class="formdiv table table-sm table-bordered">
+                <p style="font-weight: bolder; margin-bottom: 3px;">订单数量</p>
+                <thead>
+                        <tr class="text-center">
+                            <th colspan="3" scope="col">颜色</th>
+                            <th class="align-middle" rowspan="2" scope="col">比列</th>
+                            <th colspan="6" scope="col">尺码</th>
+                            <th colspan="2" scope="col">数量</th>
+                        </tr>
+                        <!-- for you+all brand -->
+                        {% if order.brand.name == 'You+All'%}
+                        <tr class="text-center">
+                            <th scope="col">中文</th>
+                            <th scope="col">英文</th>
+                            <th scope="col">色号</th>
+                            <th scope="col">16</th>
+                            <th scope="col">18</th>
+                            <th scope="col">20</th>
+                            <th scope="col">22</th>
+                            <th scope="col">24</th>
+                            <th scope="col">26</th>
+                            <th scope="col">中包</th>
+                            <th scope="col">件数</th>
+                        </tr>
+                        {% else %}    
+                            {% if order.labeltype == 'NUMBER'%}
+                            <tr class="text-center">
+                                <th scope="col">中文</th>
+                                <th scope="col">英文</th>
+                                <th scope="col">色号</th>
+                                <th scope="col">6</th>
+                                <th scope="col">8</th>
+                                <th scope="col">10</th>
+                                <th scope="col">12</th>
+                                <th scope="col">14</th>
+                                <th scope="col">16</th>
+                                <th scope="col">中包</th>
+                                <th scope="col">件数</th>
+                            </tr>
+                            {% else %}
+                                {% if order.created_date.date < date_allysize.date %}
+                                <tr class="text-center">
+                                    <th scope="col">中文</th>
+                                    <th scope="col">英文</th>
+                                    <th scope="col">色号</th>
+                                    <th scope="col">XS</th>
+                                    <th scope="col">S</th>
+                                    <th scope="col">M</th>
+                                    <th scope="col">L</th>
+                                    <th scope="col">XL</th>
+                                    <th scope="col">XXL</th>
+                                    <th scope="col">中包</th>
+                                    <th scope="col">件数</th>
+                                </tr>
+                                {% else %}
+                                <tr class="text-center">
+                                    <th scope="col">中文</th>
+                                    <th scope="col">英文</th>
+                                    <th scope="col">色号</th>
+                                    <th scope="col">XXS</th>
+                                    <th scope="col">XS</th>
+                                    <th scope="col">S</th>
+                                    <th scope="col">M</th>
+                                    <th scope="col">L</th>
+                                    <th scope="col">XL</th>
+                                    <th scope="col">中包</th>
+                                    <th scope="col">件数</th>
+                                </tr>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    </thead>
+                    {% if colorqtys %}
+                        {%for colorqty in colorqtys%}
+                        <tr  class="text-center">
+                            <td>{{colorqty.color_cn}}</td>
+                            <td>{{colorqty.color}}</td>
+                            <td>{{colorqty.color_no}}</td>
+                            <td>{{colorqty.ratio}}</td>
+                            <td>{{colorqty.size1}}</td>
+                            <td>{{colorqty.size2}}</td>
+                            <td>{{colorqty.size3}}</td>
+                            <td>{{colorqty.size4}}</td>
+                            <td>{{colorqty.size5}}</td>
+                            <td>{{colorqty.size6}}</td>
+                            {% if colorqty.bags == None %}
+                            <td></td>
+                            {% else %}
+                            <td>{{colorqty.bags}}</td>
+                            {% endif %}
+                            <td>{{colorqty.qty}}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td class="text-center" colspan="12" scope="col">尚未添加</td>
+                    </tr>
+                    {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12 col-md-12">
+        <div class="table-responsive">
+            <table class="formdiv table table-sm table-bordered">
+                <p style="font-weight: bolder; margin-bottom: 3px;">实际出货</p>
+                <thead>
+                    <tr class="text-center">
+                        <th colspan="3" scope="col">颜色</th>
+                        <th class="align-middle" rowspan="2" scope="col">比列</th>
+                        <th colspan="6" scope="col">尺码</th>
+                        <th colspan="2" scope="col">数量</th>
+                    </tr>
+                    <!-- for you+all brand -->
+                    {% if order.brand.name == 'You+All'%}
+                    <tr class="text-center">
+                        <th scope="col">中文</th>
+                        <th scope="col">英文</th>
+                        <th scope="col">色号</th>
+                        <th scope="col">16</th>
+                        <th scope="col">18</th>
+                        <th scope="col">20</th>
+                        <th scope="col">22</th>
+                        <th scope="col">24</th>
+                        <th scope="col">26</th>
+                        <th scope="col">中包</th>
+                        <th scope="col">件数</th>
+                    </tr>
+                    {% else %}  
+                        {% if order.labeltype == 'NUMBER'%}
+                        <tr class="text-center">
+                            <th scope="col">中文</th>
+                            <th scope="col">英文</th>
+                            <th scope="col">色号</th>
+                            <th scope="col">6</th>
+                            <th scope="col">8</th>
+                            <th scope="col">10</th>
+                            <th scope="col">12</th>
+                            <th scope="col">14</th>
+                            <th scope="col">16</th>
+                            <th scope="col">中包</th>
+                            <th scope="col">件数</th>
+                        </tr>
+                        {% else %}
+                            {% if order.created_date.date < date_allysize.date %}
+                            <tr class="text-center">
+                                <th scope="col">中文</th>
+                                <th scope="col">英文</th>
+                                <th scope="col">色号</th>
+                                <th scope="col">XS</th>
+                                <th scope="col">S</th>
+                                <th scope="col">M</th>
+                                <th scope="col">L</th>
+                                <th scope="col">XL</th>
+                                <th scope="col">XXL</th>
+                                <th scope="col">中包</th>
+                                <th scope="col">件数</th>
+                            </tr>
+                            {% else %}
+                            <tr class="text-center">
+                                <th scope="col">中文</th>
+                                <th scope="col">英文</th>
+                                <th scope="col">色号</th>
+                                <th scope="col">XXS</th>
+                                <th scope="col">XS</th>
+                                <th scope="col">S</th>
+                                <th scope="col">M</th>
+                                <th scope="col">L</th>
+                                <th scope="col">XL</th>
+                                <th scope="col">中包</th>
+                                <th scope="col">件数</th>
+                            </tr>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                </thead>
+                    {%for colorobject in actualqty%}
+                    <tr class="text-center">
+                        <td>{{colorobject.color.color_cn}}</td>
+                        <td>{{colorobject.color.color}}</td>
+                        <td>{{colorobject.color.color_no}}</td>
+                        <td>{{colorobject.color.ratio}}</td>
+                        {% if colorobject.qty.size1 == None %}
+                        <td></td>
+                        {% else %}
+                        <td>{{colorobject.qty.size1}}</td>
+                        {% endif %}
+                        {% if colorobject.qty.size2 == None %}
+                        <td></td>
+                        {% else %}
+                        <td>{{colorobject.qty.size2}}</td>
+                        {% endif %}
+                        {% if colorobject.qty.size3 == None %}
+                        <td></td>
+                        {% else %}
+                        <td>{{colorobject.qty.size3}}</td>
+                        {% endif %}
+                        {% if colorobject.qty.size4 == None %}
+                        <td></td>
+                        {% else %}
+                        <td>{{colorobject.qty.size4}}</td>
+                        {% endif %}
+                        {% if colorobject.qty.size5 == None %}
+                        <td></td>
+                        {% else %}
+                        <td>{{colorobject.qty.size5}}</td>
+                        {% endif %}
+                        {% if colorobject.qty.size6 == None %}
+                        <td></td>
+                        {% else %}
+                        <td>{{colorobject.qty.size6}}</td>
+                        {% endif %}
+                        {% if colorobject.qty.totalbags == None %}
+                        <td></td>
+                        {% else %}
+                        <td>{{colorobject.qty.totalbags}}</td>
+                        {% endif %}
+                        {% if colorobject.qty.totalqty == None %}
+                        <td></td>
+                        {% else %}
+                        <td>{{colorobject.qty.totalqty}}</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-12 col-md-12">
+        <div class="form-group">
+            <p style="font-weight: bolder; margin-bottom: 3px;">装箱单</p>
+            <div class="table-responsive">
+                <table class="formdiv table table-sm table-bordered">
+                    <thead>
+                        <tr class="text-center">
+                            <th style="width: 10%" scope="col">颜色</th>
+                            <th style="width: 10%" scope="col">开始箱号</th>
+                            <th style="width: 10%" scope="col">结束箱号</th>
+                            <th style="width: 10%" scope="col">箱数</th>
+                            <th style="width: 4%" scope="col">尾箱</th>
+                            <th style="width: 10%" cope="col">每箱中包数</th>
+                            <!-- for you+all brand -->
+                            {% if order.brand.name == 'You+All'%}
+                            <th scope="col">16</th>
+                            <th scope="col">18</th>
+                            <th scope="col">20</th>
+                            <th scope="col">22</th>
+                            <th scope="col">24</th>
+                            <th scope="col">26</th>
+                            {% else %}
+                                {% if order.labeltype == 'NUMBER'%}
+                                    <th scope="col">6</th>
+                                    <th scope="col">8</th>
+                                    <th scope="col">10</th>
+                                    <th scope="col">12</th>
+                                    <th scope="col">14</th>
+                                    <th scope="col">16</th>
+                                {% else %}
+                                    {% if order.created_date.date < date_allysize.date %}
+                                    <th scope="col">XS</th>
+                                    <th scope="col">S</th>
+                                    <th scope="col">M</th>
+                                    <th scope="col">L</th>
+                                    <th scope="col">XL</th>
+                                    <th scope="col">XXL</th>
+                                    {% endif %}
+                                    {% if order.created_date.date > date_allysize.date %}
+                                    <th scope="col">XXS</th>
+                                    <th scope="col">XS</th>
+                                    <th scope="col">S</th>
+                                    <th scope="col">M</th>
+                                    <th scope="col">L</th>
+                                    <th scope="col">XL</th>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                            <th style="width: 8%" cope="col">每箱件数</th>
+                            <th style="width: 8%" cope="col">累计件数</th>
+                            <th style="width: 5%" cope="col">毛重</th>
+                        </tr>
+                    </thead>
+
+                    {% if packing_ctns %}
+                    {% for packing_ctn in packing_ctns %}
+                    <tr class="text-center">
+                        <td>{{packing_ctn.color}}</td>
+                        <td>{{packing_ctn.ctn_start_no}}</td>
+                        <td>{{packing_ctn.ctn_end_no}}</td>
+                        <td>{{packing_ctn.totalboxes}}</td>
+                        {% if packing_ctn.sharebox == False %}
+                        <td></td>
+                        {% else %}
+                        <td>是</td>
+                        {% endif %}
+                        {% if packing_ctn.bags == None %}
+                        <td></td>
+                        {% else %}
+                        <td>{{packing_ctn.bags}}</td>
+                        {% endif %}
+                        <td>{{packing_ctn.size1}}</td>
+                        <td>{{packing_ctn.size2}}</td>
+                        <td>{{packing_ctn.size3}}</td>
+                        <td>{{packing_ctn.size4}}</td>
+                        <td>{{packing_ctn.size5}}</td>
+                        <td>{{packing_ctn.size6}}</td>
+                        <td>{{packing_ctn.totalqty}}</td>
+                        <td>{{packing_ctn.sumtotalqty}}</td>
+                        {% if packing_ctn.sharebox == True %}
+                        <td></td>
+                        {% else %}
+                        <td>{{packing_ctn.gross_weight}}</td>
+                        {% endif %}
+                    {% endfor %}
+                    </tr>
+                    {% endif %}
+                    <tr class="text-center">
+                        <th scope="col">合计</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                        <th scope="col">{{totalboxes}}</th>
+                        <th></th>
+                        {% if orderctnsum.totalbags == None %}
+                        <th>(总中包)</th>
+                        {% else %}
+                        <th>(总中包){{orderctnsum.totalbags}}</th>
+                        {% endif %}
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        {% if orderctnsum.totalqty == None %}
+                        <th></th>
+                        {% else %}
+                        <th>{{orderctnsum.totalqty}}</th>
+                        {% endif %}
+                        {% if totalgrossweight == None %}
+                        <th></th>
+                        {% else %}
+                        <th>{{totalgrossweight}}</th>
+                        {% endif %}
+
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-sm">
+        <div class="form-group">
+            {% if order.status == 'NEW' or order.status == 'SENT_FACTORY'%}
+                <a class="btn btn-block btn-outline-primary" href="{% url 'order:orderlistnew' %}" role="button">返回</a>
+            {% elif order.status == 'CONFIRMED'%}
+                <a class="btn btn-block btn-outline-primary" href="{% url 'order:orderlistconfirmed' %}" role="button">返回</a>
+            {% elif order.status == 'SHIPPED'%}
+                <a class="btn btn-block btn-outline-primary" href="{% url 'order:orderlistshipped' %}" role="button">返回</a>
+            {% else %}
+                <a class="btn btn-block btn-outline-primary" href="{% url 'order:orderlistnew' %}" role="button">返回</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class=" col-sm">
+        <div class="form-group">
+            <a href="" class="btn btn-block btn-outline-primary" onclick="window.print()" role="button">打印</a>
+        </div>
+    </div>
+    {% if order.status == 'CONFIRMED' and request.user.is_office %}
+    <div class=" col-sm">
+        <div class="form-group">
+            <a class="btn btn-block btn-outline-primary" href="{% url 'order:ordershipped' pk=order.pk %}" role="button">订单出货</a>
+        </div>
+    </div> 
+    {% endif %}
+    <!-- {% if request.user.is_office or request.user.is_merchandiser%}
+        {% if order.packing_status.status == 'SUBMIT'%}
+        <div class=" col-sm">
+            <div class="form-group">
+                <a data-title="提示" class="delete btn btn-block btn-outline-primary" href="{% url 'order:packinglistclose' pk=order.pk %}" role="button">确认装箱单</a>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %} -->
+    {% if not order.status == 'SHIPPED' %}
+    {% if request.user.is_office or request.user.is_merchandiser%}
+    <div class=" col-sm">
+        <div class="form-group">
+            <a class=" btn btn-block btn-outline-primary" href="{% url 'order:packinglistreset' pk=order.pk %}" role="button">重置</a>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+
+{% endblock %}
+
+
+{% block script %}
+<!-- 删除项目确认js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+<script>
+    $('a.delete').confirm({
+        content: "请检查信息正确后再确认？",
+        icon: 'fa fa-warning',
+        typeAnimated: true,
+        buttons: {
+        确认: {
+            btnClass: 'btn-default',
+            action:function(){
+            location.href = this.$target.attr('href');
+            },},
+        取消: {
+            action:function () {
+            //close
+            },
+        }}
+    });
+</script>
+{% endblock %}

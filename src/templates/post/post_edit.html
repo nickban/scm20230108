@@ -1,0 +1,70 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load basename %}
+{% load crispy_forms_tags %}
+
+{% block css%}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+<link rel="stylesheet" href="{% static 'css/user.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+<!-- 需要重新加载一次，否则页面颜色显示有点问题 -->
+{% endblock%}
+
+{% block content %}
+<div class="row ">
+    <div class="formdiv col-12 col-md-8 pt-3 border border-1 rounded">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form |crispy }}
+            <div id="div_id_attachment" class="form-group attachment ">
+                <a href="{% url 'post:postattach' post.pk %}" role="button">
+                <i class="fas fa-file-upload fa-2x"></i></a>
+                <span >附件</span>
+                <ul class="list-unstyled">
+                {% for attach in attachments %}
+                    <li>
+                        <a href="{{ attach.file.url }}">{{ attach.file.name |basename }}</a>
+                        <a data-title="提示" class="delete" href="{% url 'post:postattachdelete' pk=post.pk  postattach_pk=attach.pk %}">
+                        <i class="ml-2 far fa-trash-alt fa-1x" ></i></a> 
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm col-md-2">
+                    <input class="btn btn-block btn-outline-primary" type="submit" value="保存">
+                </div>
+                <div class="col-sm col-md-2">
+                    <a class="btn btn-block btn-outline-primary" href="{% url 'post:postlist' %}" role="button">返回</a>
+                </div>
+                <div class="col-sm col-md-2">
+                    <a class="btn btn-block btn-outline-primary" href="{% url 'post:postdelete' post.pk %}" role="button">删除</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<!-- 删除项目确认js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+<script>
+    $('a.delete').confirm({
+        content: "确定要删除此附件吗？",
+        icon: 'fa fa-warning',
+        typeAnimated: true,
+        buttons: {
+        确认: {
+            btnClass: 'btn-default',
+            action:function(){
+            location.href = this.$target.attr('href');
+            },},
+        取消: {
+            action:function () {
+            //close
+            },
+        }}
+    });
+</script>
+{% endblock %}

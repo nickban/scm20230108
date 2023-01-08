@@ -1,0 +1,16 @@
+
+
+{% for each in qs%}
+{% if each.status == 'WARNING' %}
+<li style="color:red;">{{each.production}}
+    <i id=prd{{each.pk}} class="mx-2 pr-delete far fa-trash-alt fa-1x"></i>
+    <i id=pre{{each.pk}} class="pr-edit fas fa-edit fa-1x"></i>
+</li>
+{% else %}
+<li >{{each.production}}
+    <i id=prd{{each.pk}} class="mx-2 pr-delete far fa-trash-alt fa-1x"></i>
+    <i id=pre{{each.pk}} class="pr-edit fas fa-edit fa-1x"></i>
+</li>
+{% endif %}
+{% endfor %}
+

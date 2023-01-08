@@ -1,0 +1,87 @@
+<nav class="navbar navbar-expand-lg">
+    <a class="navbar-brand" href="{% url 'home' %}"><strong>缘色SCM</strong></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-toggle-off fa-2x"></i>
+    </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">样板</a>
+        <div class="dropdown-menu">
+          {% if request.user.is_office or request.user.is_merchandiser or request.user.is_merchandiser_manager%}
+          <a class="dropdown-item" href="{% url 'sample:sampleaddstep1' %}">新建</a>
+          {% endif %}
+          <a class="dropdown-item" href="{% url 'sample:samplelistnew' %}">未完成</a>
+          <a class="dropdown-item" href="{% url 'sample:samplelistcompleted' %}">已完成</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">订单</a>
+        <div class="dropdown-menu">
+          {% if request.user.is_merchandiser or request.user.is_merchandiser_manager%}
+          <a class="dropdown-item" href="{% url 'order:orderadd' %}">新建</a>
+          {% endif %}
+          <a class="dropdown-item" href="{% url 'order:orderlistnew' %}">未确认</a>
+          <a class="dropdown-item" href="{% url 'order:orderlistconfirmed' %}">已确认</a>
+          <a class="dropdown-item" href="{% url 'order:ordershipbyweek' 0 %}">出货列表</a>
+          <!-- <a class="dropdown-item" href="{% url 'order:orderlistshipthisweek' %}">本周出货</a> -->
+          <!-- <a class="dropdown-item" href="{% url 'order:orderlistshipnextweek' %}">下一周出货</a> -->
+          <!-- <a class="dropdown-item" href="{% url 'order:orderlistshipnextnextweek' %}">下二周出货</a> -->
+          <a class="dropdown-item" href="{% url 'order:qcreportlist' %}">查货报告</a>
+          <a class="dropdown-item" href="{% url 'order:orderlistshipped' %}">历史出货</a>
+          {% if request.user.is_factory or request.user.is_finance or request.user.is_merchandiser_manager%}
+          <a class="dropdown-item" href="{% url 'order:invoicelist' %}">对账清单</a>
+          {% endif %}
+          <a class="dropdown-item" href="{% url 'syssetting:mainlabel' %}">主唛挂牌</a>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'post:postlist' %}">历史信息</a>
+      </li>
+      {% if request.user.is_merchandiser or request.user.is_merchandiser_manager  %}
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">统计</a>
+        <div class="dropdown-menu">
+
+          <a class="dropdown-item" href="{% url 'report:profit' %}">利润</a>
+          <a class="dropdown-item" href="{% url 'report:factoryqty' %}">工厂接单数量</a>
+          <a class="dropdown-item" href="{% url 'report:moneymonth' %}">客人接单金额</a>
+
+        </div>
+      </li>
+      {% endif %}
+      {% if request.user.is_merchandiser_manager  %}
+      <ul class="navbar-nav mr-auto">
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">管理</a>
+        <div class="dropdown-menu">
+          <a class="dropdown-item" href="{% url 'setpassword' %}">修改密码</a>
+          <a class="dropdown-item" href="{% url 'signup' %}">添加用户</a>
+        </div>
+      </li>
+      </ul>
+      {% endif %}
+    </ul>
+  </div>
+
+  <div class="d-flex justify-content-end collapse navbar-collapse" id="navbarSupportedContent">
+    {% if user.is_authenticated %}
+      <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><strong>欢迎你！{{ user.username }}</strong></a>
+          <div class="dropdown-menu">
+            {% if request.user.is_factory %}
+            <a class="dropdown-item" href="{% url 'setting' %}">工厂信息</a>
+            {% endif %}
+            <a class="dropdown-item" href="{% url 'change_password' %}">修改密码</a>
+            <a class="dropdown-item" href="{% url 'logout' %}">登出</a>
+          </div>
+        </li>
+      </ul>
+    {% endif %}
+  </div>
+</nav>
+
+
+

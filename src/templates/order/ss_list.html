@@ -1,0 +1,14 @@
+
+
+{% for each in qs|slice:":3"%}
+{% if each.status == 'WARNING' %}
+<li style="color:red;">{{each.shipping_sample}}
+<i id=ssd{{each.pk}} class="mx-2 ss-delete far fa-trash-alt fa-1x"></i>
+<i id=sse{{each.pk}} class="ss-edit fas fa-edit fa-1x"></i></li>
+{% else %}
+<li >{{each.shipping_sample}}
+<i id=ssd{{each.pk}} class="mx-2 ss-delete far fa-trash-alt fa-1x"></i>
+<i id=sse{{each.pk}} class="ss-edit fas fa-edit fa-1x"></i></li>
+{% endif %}
+{% endfor %}
+

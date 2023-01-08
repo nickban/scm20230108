@@ -1,0 +1,72 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block css%}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+
+{% endblock %}
+
+{% block content %}
+<div class="row d-flex flex-wrap align-items-end">
+    {% for attach in attaches %}
+      <a href="{{attach.file.url}}">
+      <img src="{{ attach.file.url}}" width=300 height=300 class="img-thumbnail mx-1"></a>    
+      {% if 'os_pics' in attachtype %}
+        {% if not sample.status == 'COMPLETED'%}
+          {% if request.user.is_merchandiser or  request.user.is_office or request.user.is_merchandiser_manager%}
+            <a data-title="提示" class="delete" href="{% url 'sample:sampleattachdelete' pk=sample.pk attachtype=attachtype attach_pk=attach.pk %}">
+            <i class="mx-2 far fa-trash-alt fa-1x"></i></a> 
+          {% endif%}
+        {% endif %}
+      {% else %}
+        {% if not sample.status == 'COMPLETED'%}
+        <a data-title="提示" class="delete" href="{% url 'sample:sampleattachdelete' pk=sample.pk attachtype=attachtype attach_pk=attach.pk %}">
+        <i class="mx-2 far fa-trash-alt fa-1x"></i></a> 
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+</div>
+
+<div class="row mt-3 d-flex justify-content-center">
+    {% if sample.status == 'COMPLETED'%}
+      <a class="btn btn-block btn-outline-primary" href="{% url 'sample:sampledetail' pk=sample.pk%}" role="button">返回</a>
+    {% else %}
+      {% if request.user.is_merchandiser or  request.user.is_office or request.user.is_merchandiser_manager%}
+          {% if 'step2' in previous_url%}
+          <a class="btn btn-block btn-outline-primary" href="{% url 'sample:sampleaddstep2' pk=sample.pk%}" role="button">返回</a>
+          {% else %}
+          <a class="btn btn-block btn-outline-primary" href="{% url 'sample:sampleedit' pk=sample.pk%}" role="button">返回</a>
+          {% endif %}
+        {% else%}
+         <a class="btn btn-block btn-outline-primary" href="{% url 'sample:sampledetail' pk=sample.pk%}" role="button">返回</a>
+      {% endif %}
+    {% endif %}
+</div>
+
+  
+
+{% endblock %}
+{% block script %}
+<!-- 删除项目确认js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+<script>
+    $('a.delete').confirm({
+        content: "确定要删除此附件吗？",
+        icon: 'fa fa-warning',
+        typeAnimated: true,
+        buttons: {
+        确认: {
+            btnClass: 'btn-default',
+            action:function(){
+            location.href = this.$target.attr('href');
+            },},
+        取消: {
+            action:function () {
+            //close
+            },
+        }}
+    });
+</script>
+
+{% endblock %}

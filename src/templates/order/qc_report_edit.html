@@ -1,0 +1,268 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load basename %}
+{% load crispy_forms_tags %}
+
+
+{% block css%}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+<!-- 删除项目控件的CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+{% endblock%}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-md-12">
+        {% if check_items%}
+
+        <ul class="list-group">
+            <div class="alert alert-primary" role="alert">
+                检查项目共{{check_items.count}}项，请根据实际情况填写！
+              </div>
+            {% for check_item in check_items%}
+            <li class="list-group-item">{{check_item.number}}: {{check_item.name}}</li>
+            {% endfor %}
+        </ul>
+
+        <div class="form-group mt-2">
+            <a class="btn btn-block btn-outline-primary" href="{% url 'order:editqcreport' pk=qc_report.pk checkitem_number=1 %}" role="button">开始检查</a>
+        </div>
+        {% endif %}
+
+        {% if check_points %}
+        <div class="row">
+            <div class="col form-group">
+                <ul class="list-group">
+                    <li class="list-group-item">订单号:  {{ order.po}}</li>
+                    <li class="list-group-item">款  号:  {{ order.style_no}}</li>
+                    <li class="list-group-item">工  厂:  {{ order.factory}}</li>
+                </ul>
+            </div>
+            <div class="col form-group">
+                <ul class="list-group">
+                    <li class="list-group-item">出货日期:  {{ order.handover_date_f |date:"Y/m/d"  }}</li>
+                    <li class="list-group-item">查货日期:  {{qc_report.created_date |date:"Y/m/d" }}</li>
+                    <li class="list-group-item">查货人员:  {{qc_report.created_by }}</li>
+                </ul>
+            </div>
+            <div class="col form-group">
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>当前检查项目: <span class="checkitem_class" id="{{check_item.number}}"></span> {{check_item.number}}:{{check_item.name}}</strong></li>
+                </ul>
+            </div>
+            <div class="col form-group">
+                <img style="min-height: 127px;"  class="rounded mb-1 mr-3" src="{{ order.avatar.file.url}}" width=145px height=145px alt="款式图" >
+            </div>
+        </div>
+        <span class="checkitem_class" id="{{check_item.pk}}"></span>
+        <span class="qcreport_class" id="{{qc_report.pk}}"></span>
+        <table id="dataTable" class="table mt-3">
+            <thead>
+            <tr>
+                <th style="width: 10%">#</th>
+                <th style="width: 10%">检查条目</th>
+                <th style="width: 30%">描述</th>
+                <th style="width: 30%">QC备注</th>
+                <th style="width: 10%">瑕疵等级</th>
+                <th style="width: 10%">比列</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for check_point in check_points%}
+            <tr class="tr">
+                <td>{{check_point.number}}</td>
+                <td><input class="form-check-input checkbox" type="checkbox" value="{{check_point.pk}}">{{check_point.name}}</td>
+                {% if check_point.description == None %}
+                <td></td>
+                {% else %}
+                <td>{{check_point.description}}</td>
+                {% endif %}
+                <td><input class="form-control comments" type="text"></td>
+                <td>
+                    <select class="form-control select">
+                        <option>请选择</option>
+                        <option>严重</option>
+                        <option>次要</option>
+                    </select>
+                </td>
+                <td><input class="form-control ratio" type="text"></td>
+                <!-- <td><a class="btn btn-block btn-outline-primary" href="{% url 'order:editqcreport' pk=qc_report.pk checkitem_number=check_item_before %}" role="button">上传</a></td> -->
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+          <div class="row mb-3">
+            <div class="col">
+                <div class="form-group mt-2">
+                    <a id="Forward_ID" href="{% url 'order:editqcreport' pk=qc_report.pk checkitem_number=check_item_before %}"  class="btn btn-block btn-outline-primary" role="button">上一项</a>
+                </div>
+            </div>
+            {% if check_item.number == check_items_len %}
+            <div class="col">
+                <div class="form-group mt-2">
+                    <a  id="Finish_ID" href="{% url 'order:qcreportfinish' pk=qc_report.pk %}" class="btn btn-block btn-outline-primary"  role="button">完成</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="col">
+                <div class="form-group mt-2">
+                    <a id="Afterward_ID" href="{% url 'order:editqcreport' pk=qc_report.pk checkitem_number=check_item_after %}" class="btn btn-block btn-outline-primary"  role="button">下一项</a>
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group mt-2">
+                    <a id="Last_ID" href="{% url 'order:editqcreport' pk=qc_report.pk checkitem_number=check_items_len %}" class="btn btn-block btn-outline-primary"  role="button">最后一项</a>
+                </div>
+            </div>
+            {% endif %}
+          </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    // 显示数据
+    var selected_check_point_id_list= "{{selected_check_point_id_list}}"
+    var selected_check_point_grade_list = "{{selected_check_point_grade_list}}"
+    var selected_check_point_ratio_list = "{{selected_check_point_ratio_list}}"
+    var selected_check_point_commennts_list = "{{selected_check_point_commennts_list}}"
+    function trimdata(data){
+        new_data = []
+            // console.log(data)
+            data = data.split(',')
+            for (var i = 0, len = data.length; i < len; i++) {
+                item = data[i]
+                item  = item.replace(" ", "");
+                item  = item.replace("[", "");
+                item  = item.replace("]", "");
+                item  = item.replace("&#x27;", "");
+                item  = item.replace("&#x27;", "");
+                new_data.push(item)
+            }
+        return new_data
+    }
+
+    selected_check_point_id_list= trimdata(selected_check_point_id_list)
+    selected_check_point_grade_list = trimdata(selected_check_point_grade_list)
+    selected_check_point_ratio_list= trimdata(selected_check_point_ratio_list)
+    selected_check_point_commennts_list= trimdata(selected_check_point_commennts_list)
+
+    // console.log(selected_check_point_id_list)
+    // console.log(selected_check_point_grade_list )
+    // console.log(selected_check_point_ratio_list)
+
+    if (selected_check_point_id_list.length >= 0){
+        fill_data(selected_check_point_id_list,selected_check_point_grade_list,
+        selected_check_point_ratio_list,selected_check_point_commennts_list)
+    }
+
+    function fill_data(checkboxdata,gradedata,ratiodata,commentsdata){
+        var checkboxs = $( ".checkbox");
+        for (var i = 0; i < checkboxs.length; i++) {
+
+            var tr= $(checkboxs[i]).parent().parent()
+            var select = $(tr).find(".select")
+            var ratio = $(tr).find(".ratio")
+            var comments = $(tr).find(".comments")
+
+            value= $(checkboxs[i]).val()
+
+            value = value.toString()
+            index = checkboxdata.indexOf(value)
+
+            if (index >= 0){
+                grade_value = gradedata[index]
+                ratio_value = ratiodata[index]
+                comments_value = commentsdata[index]
+
+                $(checkboxs[i]).prop( "checked", true)
+                // console.log('grade_value')
+                // console.log(grade_value)
+
+                $(select).val(grade_value)
+                
+                $(ratio).val(ratio_value)
+                $(comments).val(comments_value)
+
+
+            }
+        }
+    }
+
+    $( "#Afterward_ID" ).on('click', function(){
+        navClick('');
+    }) 
+
+    $( "#Forward_ID" ).on('click', function(){
+        navClick('');
+    }) 
+
+    $( "#Finish_ID" ).on('click', function(){
+        navClick('');
+    }) 
+
+    $( "#Last_ID" ).on('click', function(){
+        navClick('');
+    }) 
+
+    function navClick() {
+        
+        var checkboxs = $( ".checkbox");
+        var checkitem_span = $( ".checkitem_class");
+        var qcreport_span = $( ".qcreport_class");
+
+        table_data= []
+        
+        checkitem_pk = $(checkitem_span).attr('id')
+        qcreport_pk = $(qcreport_span).attr('id')
+
+        // console.log(checkitem_pk)
+        // console.log(qcreport_pk)
+
+        for (var i = 0; i < checkboxs.length; i++) {
+            if ( $(checkboxs[i]).prop( "checked" )){
+                row_data = []
+
+                var tr= $(checkboxs[i]).parent().parent()
+                var select = $(tr).find(".select")
+                var ratio = $(tr).find(".ratio")
+                var comments = $(tr).find(".comments")
+
+                checkpoint_pk = $(checkboxs[i]).val()
+                select_value = select.val()
+                ratio_value = ratio.val()
+                comments_value = comments.val()
+
+                row_data.push(checkitem_pk)
+                row_data.push(checkpoint_pk)
+                row_data.push(select_value)
+                row_data.push(ratio_value)
+                row_data.push(comments_value )
+
+                table_data.push(row_data)
+            }
+        }
+
+        url = '/order/' + 'qcreport'+ '/' + 'api' + '/'
+
+        var data_json= JSON.stringify(table_data);
+
+        // console.log(data_json)
+
+        $.ajax({
+            url: url,
+            type: "GET",
+            data: {
+                'query':data_json,
+                'checkitem_pk':checkitem_pk,
+                'qcreport_pk':qcreport_pk,
+            },
+            success: function (data) {
+                // console.log(data)
+            }
+        }); // end ajax
+    };
+</script>
+{% endblock %}

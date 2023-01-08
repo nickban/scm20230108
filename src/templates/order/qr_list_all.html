@@ -1,0 +1,21 @@
+
+
+{% for each in qs%}
+<!-- <li >时间:{{each.created_date |date:"Y/m/d" }}  查货人:{{each.created_by}}
+    <a href="{% if request.is_secure %}https://{% else %}http://{% endif %}{{ each.get_absolute_url }}">查看报告</a>
+</li> -->
+<li >{{each.created_date |date:"Y/m/d" }} - {{each.created_by}} 
+    -
+    {% if each.product_status == None %}
+    {% elif each.product_status == NEW_P%}
+    刚出成品
+    {% elif each.product_status == FINISH_P%}
+    成品全部完成
+    {% else %}
+    大货包装完成
+    {% endif %}
+    -
+       <a href="{{ each.get_absolute_url }}">报告</a>
+  </li>
+{% endfor %}
+

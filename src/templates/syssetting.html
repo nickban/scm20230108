@@ -1,0 +1,152 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block css%}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+<link rel="stylesheet" href="{% static 'css/user.css' %}">
+{% endblock%}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-md-8">
+        <div class="row row-cols-1 row-cols-md-4">
+            <div class="col mb-3">
+                <div class="card h-100 text-center">
+                  <i class="mt-2 fas fa-ribbon fa-3x"></i>
+                  <div class="card-body py-1">
+                    <p class="card-title"><strong><a href="{% url 'syssetting:mainlabel'%}">主唛</a></strong></p>
+                  </div>
+                </div>
+              </div>
+            <div class="col mb-3">
+                <div class="card h-100 text-center">
+                  <i class=" mt-2 fas fa-tags fa-3x"></i>
+                  <div class="card-body py-1">
+                    <p class="card-title"><strong><a href="{% url 'syssetting:maintag'%}">挂牌</a></strong></p>
+                  </div>
+                </div>
+            </div>
+            <div class="col mb-3">
+                <div class="card h-100 text-center">
+                  <i class=" mt-2 fas fa-tags fa-3x"></i>
+                  <div class="card-body py-1">
+                    <p class="card-title"><strong><a href="{% url 'syssetting:additiontag'%}">附加挂牌</a></strong></p>
+                  </div>
+                </div>
+            </div>
+        </div>
+        <div class="ml-1 row">
+            <table class="table table-hover">
+                {% if request.user.is_office or request.user.is_merchandiser%}
+                    {% if type == 'mainlabel' %}
+                    <a class="col-12 col-md-2 mb-3 btn btn-outline-primary" href="{% url 'syssetting:mainlabeladd' %}" role="button">新建</a>
+                    {% elif type == 'maintag' %}
+                    <a class="col-12 col-md-2 mb-3 btn btn-outline-primary" href="{% url 'syssetting:maintagadd' %}" role="button">新建</a>
+                    {% elif type == 'additiontag' %}
+                    <a class="col-12 col-md-2 mb-3 btn btn-outline-primary" href="{% url 'syssetting:additiontagadd' %}" role="button">新建</a>
+                    {% else %}
+                    {% endif %}
+                {% endif %}
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">品牌</th>
+                    <th scope="col">编号</th>
+                    <th scope="col">图片</th>
+                    {% if request.user.is_office or request.user.is_merchandiser%}
+                    <th scope="col">操作</th>
+                    {% endif %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if type == 'mainlabel' %}
+                    {% for mainlabel in mainlabels%}
+                    <tr>
+                      <th scope="row">{{forloop.counter}}</th>
+                      <td>{{mainlabel.brand}}</td>
+                      <td>{{mainlabel.name}}</td>
+                      {% if mainlabel.file%}
+                          <td><a href="{{mainlabel.file.url}}"><img src="{{mainlabel.file.url}}" alt="" height=40px></a></td>
+                          {% else %}
+                          <td></td>
+                      {% endif %}
+                      {% if request.user.is_office or request.user.is_merchandiser%}
+                          <td><a href="{% url 'syssetting:mainlabelupdate' pk=mainlabel.pk %}"><i class="fas fa-edit fa-1x"></i></a>
+                          <a data-title="提示" class="delete" href="{% url 'syssetting:mainlabeldelete' pk=mainlabel.pk %}"><i class="fas fa-trash-alt fa-1x"></i></a>
+                          </td>
+                      {% endif %}
+                    </tr>
+                    {% endfor %}
+                  {% elif type == 'maintag' %}
+                    {% for maintag in maintags%}
+                    <tr>
+                      <th scope="row">{{forloop.counter}}</th>
+                      <td>{{maintag.brand}}</td>
+                      <td>{{maintag.name}}</td>
+                      {% if maintag.file%}
+                          <td><a href="{{maintag.file.url}}"><img src="{{maintag.file.url}}" alt="" height=40px></a></td>
+                          {% else %}
+                          <td></td>
+                      {% endif %}
+                      {% if request.user.is_office or request.user.is_merchandiser%}
+                          <td><a href="{% url 'syssetting:maintagupdate' pk=maintag.pk %}"><i class="fas fa-edit fa-1x"></i></a>
+                          <a data-title="提示" class="delete" href="{% url 'syssetting:maintagdelete' pk=maintag.pk %}"><i class="fas fa-trash-alt fa-1x"></i></a>
+                          </td>
+                      {% endif %}
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    {% for additiontag in additiontags%}
+                    <tr>
+                      <th scope="row">{{forloop.counter}}</th>
+                      <td>{{additiontag.brand}}</td>
+                      <td>{{additiontag.name}}</td>
+                      {% if additiontag.file%}
+                          <td><a href="{{additiontag.file.url}}"><img src="{{additiontag.file.url}}" alt="" height=40px></a></td>
+                          {% else %}
+                          <td></td>
+                      {% endif %}
+                      {% if request.user.is_office or request.user.is_merchandiser%}
+                          <td><a href="{% url 'syssetting:additiontagupdate' pk=additiontag.pk %}"><i class="fas fa-edit fa-1x"></i></a>
+                          <a data-title="提示" class="delete" href="{% url 'syssetting:additiontagdelete' pk=additiontag.pk %}"><i class="fas fa-trash-alt fa-1x"></i></a>
+                          </td>
+                      {% endif %}
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+
+                    
+                </tbody>
+            </table>
+            {% include 'paginator.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block script %}
+<!-- 删除项目确认js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+<script>
+    $('a.delete').confirm({
+        content: "确定要删除此附件吗？",
+        icon: 'fa fa-warning',
+        typeAnimated: true,
+        buttons: {
+        确认: {
+            btnClass: 'btn-default',
+            action:function(){
+            location.href = this.$target.attr('href');
+            },},
+        取消: {
+            action:function () {
+            //close
+            },
+        }}
+    });
+</script>
+{% endblock %}

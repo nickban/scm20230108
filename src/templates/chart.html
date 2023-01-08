@@ -1,0 +1,207 @@
+{% extends 'base_home.html' %}
+
+{% block css%}
+<link href="https://netdna.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.2.0/css/datepicker.min.css" rel="stylesheet">
+{% endblock %}
+
+
+
+{% block content %}
+<div class="col-md-2">
+    <label for="cc-expiration" class="form-label">请选择年份</label>
+    <input type="text" class="form-control" name="datepicker" id="datepicker" />
+    <button type="button" class="btn btn-primary report">生产报告</button>
+  </div>
+
+<div style="position: relative; height:100vh; width:80vw">
+    <canvas id="myChart">
+    </canvas>
+</div>
+{% endblock %}
+
+
+{% block script %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="https://netdna.bootstrapcdn.com/bootstrap/2.3.2/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.2.0/js/bootstrap-datepicker.min.js"></script>
+<script>
+
+var currentTime = new Date()
+var this_year = currentTime.getFullYear()
+
+
+$('#datepicker').val(this_year)
+
+var endpoint_path = '/report/api/profit/data/'
+var endpoint = endpoint_path + this_year
+
+
+$(".report").click(function(event) {
+    var year = $('#datepicker').val();
+
+    var endpoint_path = '/report/api/profit/data/'
+    var endpoint = endpoint_path + year
+
+
+    $.ajax({
+        method: "GET",
+        url: endpoint,
+        success: function(data){
+        setchart(data);
+        },
+        error: function(error_data){
+        }
+    });
+
+});
+
+
+$.ajax({
+    method: "GET",
+    url: endpoint,
+    success: function(data){
+    setchart(data);
+    },
+    error: function(error_data){
+    }
+});
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+       color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+ }
+
+
+function setchart(data) {
+var ctx = document.getElementById("myChart").getContext('2d');
+var myChart = new Chart(ctx, {
+type: 'bar',
+data: {
+    labels: data.labels,
+    datasets: [{
+        label: '全部品牌',
+        data: data.dataall,
+        fill: true,
+        borderWidth: 2,
+        // backgroundColor: window.chartColors.red,
+        backgroundColor: getRandomColor(),
+        // borderColor: window.chartColors.red,
+    },
+    // {
+    //     label: 'AU',
+    //     data: data.dataau,
+    //     fill: true,
+    //     backgroundColor: getRandomColor(),
+    //     // backgroundColor: window.chartColors.blue,
+    //     // borderColor: window.chartColors.blue,
+    //     borderWidth: 2
+    // },
+    // {
+    //     label: 'NZ',
+    //     data: data.datanz,
+    //     fill: true,
+    //     backgroundColor: getRandomColor(),
+    //     // backgroundColor: window.chartColors.yellow,
+    //     // borderColor: window.chartColors.yellow,
+    //     borderWidth: 2
+    // },
+    // {
+    //     label: 'SG',
+    //     data: data.datasg,
+    //     fill: true,
+    //     backgroundColor: getRandomColor(),
+    //     // backgroundColor: window.chartColors.purple,
+    //     // borderColor: window.chartColors.purple,
+    //     borderWidth: 2
+    // },
+    // {
+    //     label: 'KR',
+    //     data: data.datakr,
+    //     fill: true,
+    //     backgroundColor: getRandomColor(),
+    //     // backgroundColor: window.chartColors.green,
+    //     // borderColor: window.chartColors.green,
+    //     borderWidth: 2
+    // },
+    {
+        label: 'ALLY',
+        data: data.dataally,
+        fill: true,
+        backgroundColor: getRandomColor(),
+        // backgroundColor: window.chartColors.green,
+        // borderColor: window.chartColors.green,
+        borderWidth: 2
+    },
+    {
+        label: 'VG',
+        data: data.datavg,
+        fill: true,
+        backgroundColor: getRandomColor(),
+        // backgroundColor: window.chartColors.green,
+        // borderColor: window.chartColors.green,
+        borderWidth: 2
+    },
+    // {
+    //     label: 'JOJO',
+    //     data: data.datajojo,
+    //     fill: true,
+    //     backgroundColor: getRandomColor(),
+    //     // backgroundColor: window.chartColors.green,
+    //     // borderColor: window.chartColors.green,
+    //     borderWidth: 2
+    // },
+]
+},
+options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: '公司订单利润柱状图(数据基于已出货订单统计)'
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: '月份'
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: '单位:RMB'
+                    },
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+});
+
+}
+
+
+$("#datepicker").datepicker({
+    format: "yyyy",
+    viewMode: "years", 
+    minViewMode: "years",
+    autoclose:true
+}); 
+
+</script>
+{% endblock %}

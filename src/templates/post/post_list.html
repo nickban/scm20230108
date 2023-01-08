@@ -1,0 +1,78 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+
+{% block css%}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="ml-3 pt-3 col-12 col-md-8 border border-1 rounded">
+    {% if request.user.is_office %}
+    <div class="col-12 col-md-2 mt-0 p-0">
+      <a class="mb-2 btn btn-block btn-outline-primary" href="{% url 'post:postadd'%}" role="button">新建</a>
+    </div>
+    {% endif %}
+    <div class="pb-3 table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>发布日期</th>
+            <th style="min-width: 500px;">标题</th>
+            <th style="min-width: 50px;">发布人</th>
+            <th style="min-width: 50px;">类别</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for post in posts %}
+            <tr>
+              <td>{{ post.create_time |date:"Y/m/d"  }}</td>
+              {% if request.user.is_office %}
+              <td><a href="{% url 'post:postedit' post.pk %}">{{ post.title }}</a></td>
+              {% else %}
+              <td><a href="{% url 'post:postdetail' post.pk %}">{{ post.title }}</a></td>
+              {% endif %}
+              <td>{{ post.created_by }}</td>
+              <td>{{ post.catagory }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+
+<script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js" ></script>
+<script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js" ></script>
+<!-- datatable的js设置 -->
+<script>
+$(document).ready( function () {
+  var table =$('.table').DataTable({
+        "language": {
+          "processing": "处理中...",
+          "loadingRecords": "载入中...",
+          "lengthMenu": "显示 _MENU_ 项结果",
+          "zeroRecords": "没有符合的结果",
+          "info": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+          "infoEmpty": "显示第 0 至 0 项结果，共 0 项",
+          "infoFiltered": "(从 _MAX_ 项结果中过滤)",
+          "infoPostFix":  "",
+          "search": "搜索:",
+          "paginate": {
+            "next": "下一页",
+            "previous": "上一页",
+          }, 
+        },
+        "order": [[ 0, 'desc' ],]
+    });
+} );
+</script>
+{% endblock %}

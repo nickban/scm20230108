@@ -1,0 +1,25 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load basename %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <form class="my-3" method="post">{% csrf_token %}
+        <div class="card w-50">
+            <h6 class="card-header"><strong>确定要删除此订单吗?</strong></h6>
+            <div class="card-body">
+              <h6 class="card-title">订单号: {{order.po}}</h6>
+              <h6 class="card-title">款号:{{order.style_no}}</h6>
+              <img  class="rounded" src="{{ order.avatar.file.url }}" width=200 height=200 alt="款式图">
+            </div>
+            <div class="row p-3">
+                <div class="col-3">
+                    <input class="btn btn-block btn-outline-primary" type="submit" value="确认">
+                </div>
+                <div class="col-3">
+                    <a class="btn btn-block btn-outline-primary" href="{% url 'order:orderedit' order.pk %}" role="button">返回</a>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

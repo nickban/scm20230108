@@ -1,0 +1,59 @@
+{% extends 'base_login.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block css%}
+<link rel="stylesheet" href="{% static 'css/user.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center ">
+        <div class="card border-0">
+            <div class="card_body text-center">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col">
+                            <img src="{% static 'logo/logo.png' %}" height=200px>
+                        </div>
+                        <div class="col text_left mt-4 mb-3">
+                            <img src="{% static 'logo/slogan.png' %}" height=30px>
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
+                                
+                                {% for error in form.non_field_errors %}
+                                <p{% if forloop.last %} class="mb-0"{% endif %}>{{ error }}</p>
+                                {% endfor %}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            {% endif %}
+                            <div class="input-group mb-2">
+                                {% render_field form.username class="form-control" placeholder='用户名' %}
+                                <div class="input-group-append">
+                                    <div class="input-group-text">
+                                        <span class="fas fa-user"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="input-group mb-2">
+                                {% render_field form.password class="form-control" placeholder='密码' %}
+                                <div class="input-group-append">
+                                    <div class="input-group-text">
+                                        <span class="fas fa-lock"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="input-group mb-3">
+                                <button type="submit" class="btn btn-primary btn-block">登录</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div> 
+    </div>
+</div>
+{% endblock %}

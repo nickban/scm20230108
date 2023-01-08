@@ -1,0 +1,43 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load basename %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+
+{% block css%}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+{% endblock%}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-12 col-md-12">
+        <div class="table-responsive">
+            <p style="font-weight: bolder; margin-bottom: 3px;">纸箱规格、体积、重量</p>
+            <table class="formdiv table table-sm table-bordered">
+                <form class="my-3" method="post">{% csrf_token %}
+                <thead>
+                    <tr class="text-center">
+                        <th  scope="col">长(cm)</th>
+                        <th  scope="col">宽(cm)</th>
+                        <th  scope="col">高(cm)</th>
+                        <th  scope="col">体积(立方米)</th>
+                        <th  scope="col">每箱毛重(公斤)</th>
+                        <th  colspan="2" scope="col">操作</th>
+                    </tr>
+                    <tr class="text-center">
+                        <td  scope="col">{% render_field form.length class="form-control"%}</td>
+                        <td  scope="col">{% render_field form.width class="form-control"%}</td>
+                        <td  scope="col">{% render_field form.height class="form-control"%}</td>
+                        <td  scope="col">{% render_field form.cube class="form-control"%}</td>
+                        <td  scope="col">{% render_field form.gross_weight class="form-control"%}</td>
+                        <td  scope="col"><input class="btn  btn-outline-primary" type="submit" value="保存"></td>
+                        <td  scope="col"><a class="btn  btn-outline-primary" href="{% url 'order:packinglistadd' order.pk %}" role="button">返回</a></td>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+</form>
+{% endblock %}

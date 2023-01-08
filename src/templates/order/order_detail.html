@@ -1,0 +1,673 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% load basename %}
+{% load crispy_forms_tags %}
+
+{% block css%}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+<!-- 需要重新加载一次，否则页面颜色显示有点问题 -->
+<link  rel="stylesheet"  type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+<!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous"> -->
+<!-- 日期选择器，必须在本页面加装js和bootstrap，否则无效 -->
+<!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
+<script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+{{ form.media }}
+<!-- 样式被更改，需要重新加载一次用户样式 -->
+<link rel="stylesheet" href="{% static 'css/user.css' %}">
+{% endblock%}
+
+{% block content %}
+<div class="col-12 col-md-12 pl-0">
+    {% include 'message.html'%}
+    <div class="col-12">
+        <p style="font-weight: bolder; margin-bottom: 3px;">订单详情页{% if order %}:{{order.get_status_display}}{% endif %}</p>
+    </div>
+    <div class="formdiv border border-1 rounded p-3 mb-3">
+        <div class="row">
+            <div class="col-sm  text-left">
+                <div class="row">
+                    <div class="col-12 form-group">
+                        <img style="min-height: 127px;"  class="rounded mb-1 mr-3" src="{{ order.avatar.file.url}}" width=120px height=120px alt="款式图" >
+                    </div>
+                    <div class="w-100"></div>
+                    <div class="col-12 form-group">
+                        <div class="col-12 text-left pl-0">
+                            <label for="destination">目的地</label>
+                        </div>
+                        <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                            {% if not order.destination %}
+                            
+                            {% else %}
+                                {{ order.get_destination_display }}
+                            {% endif %}
+                        </div>
+                        <div class="form-group mt-2 ">
+                            <i class="fas fa-file-upload fa-2x"></i>
+                            <span class="">批改意见</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm ">
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="po">订单号</label>
+                    </div>
+                    <div class="fielddetail col-12 border border-1 rounded text-left">
+                        {{ order.po}}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="style_no">款号</label>
+                    </div>
+                    <div class="fielddetail col-12  border border-1 rounded text-left">
+                        {{ order.style_no}}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="tran_type">运输类型</label>
+                    </div>
+                    <div style="min-height: 38px"  class="fielddetail col-12  border border-1 rounded text-left">
+                        {{ order.get_tran_type_display}}
+                    </div>
+                </div>
+                <div class="form-group mt-2">
+                    {% if order.pk %}
+                        {% if not order.status == 'SHIPPED'%}
+                        <a href="{% url 'order:orderattachadd' pk=order.pk attachtype='shipppingpics'%}" role="button">
+                        <i class="fas fa-file-upload fa-2x"></i></a>
+                        {% else %}
+                        <i class="fas fa-file-upload fa-2x"></i>
+                        {% endif %}
+                    {% endif %}
+                    <span>船样</span>
+                        {% if shippingpics %}
+                        <a href="{% url 'order:orderattachcollection' pk=order.pk attachtype='shipppingpics'%}">
+                        <span class="badge badge-success">查看</span></a>
+                        {% else %}
+                        <span class="badge badge-warning">未上传</span>
+                        {% endif %}
+                </div>
+
+            </div>
+            <div class="col-sm ">
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="brand">品牌</label>
+                    </div>
+                    <div class="fielddetail col-12  border border-1 rounded text-left">
+                        {{ order.brand}}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="designer">买手</label>
+                    </div>
+                    <div class="fielddetail col-12  border border-1 rounded text-left">
+                        {{ order.designer}}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="packing_type">资料</label>
+                    </div>
+                    <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                        {% if not order.ziliao %}
+                        
+                        {% else %}
+                            {{ order.get_ziliao_display}}
+                        {% endif %}
+                    </div>
+                    <div class="form-group mt-2">
+                        {% if order.pk%}
+                            {% if not order.status == 'SHIPPED'%}
+                            <a href="{% url 'order:orderattachadd' pk=order.pk attachtype='swatch'%}" role="button">
+                            <i class="fas fa-file-upload fa-2x"></i></a>
+                            {% else %}
+                            <i class="fas fa-file-upload fa-2x"></i>
+                            {% endif %}
+                        {% endif %}
+                        <span >色卡</span>
+                            {% if swatches %}
+                            <a href="{% url 'order:orderattachcollection' pk=order.pk attachtype='swatch'%}">
+                            <span class="badge badge-success">查看</span></a>
+                            {% else %}
+                            <span class="badge badge-warning">未上传</span>
+                            {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm ">
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="merchandiser">跟单</label>
+                    </div>
+                    <div class="fielddetail col-12  border border-1 rounded text-left">
+                        {{ order.merchandiser}}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="factory">工厂</label>
+                    </div>
+                    <div class="fielddetail col-12  border border-1 rounded text-left">
+                        {% if not order.factory %}
+                        
+                        {% else %}
+                            {{ order.factory}}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="sample">关联原板</label>
+                    </div>
+                    <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                        {% if not order.sample %}
+                        
+                        {% else %}
+                            {{ order.sample}}
+                        {% endif %}
+                    </div>
+                    <div class="form-group mt-2">
+                        {% if order.pk %}
+                            <i class="fas fa-file-upload fa-2x"></i>
+                        {% endif %}
+                        <span >条码</span>
+                            {% if barcode %}
+                                <a href="{{ barcode.file.url }}"><span class="badge badge-success">查看</span></a>
+                                {% else %}
+                                <span class="badge badge-warning">未上传</span>
+                            {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm ">
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="packing_type">包装方式</label>
+                    </div>
+                    <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                        {% if not order.packing_type %}
+                        
+                        {% else %}
+                            {{ order.packing_type}}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="style">款式</label>
+                    </div>
+                    <div style="min-height: 38px"; class="fielddetail col-12  border border-1 rounded text-left">
+                        {% if not order.style %}
+                        
+                        {% else %}
+                            {{ order.style}}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="factory_price">工厂价格</label>
+                    </div>
+                    <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                        {% if not order.factory_price %}
+                        
+                        {% else %}
+                            {{ order.factory_price}}
+                        {% endif %}
+                    </div>
+                    {% if request.user.is_merchandiser or request.user.is_merchandiser_manager %}
+                    <div class="form-group">
+                        <div class="col-12 text-left pl-0">
+                            <label for="disigner_price">客人价格</label>
+                        </div>
+                        <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                            {% if not order.disigner_price %}
+                            
+                            {% else %}
+                                {{ order.disigner_price}}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-sm ">
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="order_type">订单类型</label>
+                    </div>
+                    <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                        {{ order.get_order_type_display}}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="handover_date_d">码标类型</label>
+                    </div>
+                    <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                        {% if not order.labeltype %}
+                        
+                        {% else %}
+                            {{ order.get_labeltype_display }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="handover_date_f">工厂交期</label>
+                    </div>
+                    <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                        {% if not order.handover_date_f %}
+                        
+                        {% else %}
+                            {{ order.handover_date_f |date:"SHORT_DATE_FORMAT" }}
+                        {% endif %}
+                    </div>
+                    {% if request.user.is_merchandiser or request.user.is_merchandiser_manager or user.is_qc %}
+                    <div class="form-group">
+                        <div class="col-12 text-left pl-0">
+                            <label for="handover_date_d">客人交期</label>
+                        </div>
+                        <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                            {% if not order.handover_date_d %}
+                            
+                            {% else %}
+                                {{ order.handover_date_d |date:"SHORT_DATE_FORMAT" }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="form-group">
+                    {% if sizespecs %}
+                        <ul class="list-inline list-group-horizontal d-flex flex-wrap">
+                        {% for sizespec in sizespecs %}
+                        <li class="list-group-item">
+                            <a href="{{ sizespec.file.url }}">{{ sizespec.file.name |basename }}</a> 
+                        </li>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <span class="mr-5">生产板评语</span>
+                </div>
+                <div class="fielddetail border border-1 rounded form-group">
+                    {{ order.comments | linebreaks }}
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <span class="mr-5">配色要求</span>
+                </div>
+                <div class="fielddetail border border-1 rounded form-group">
+                    {{ order.matchcolor | linebreaks }}
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <span class="mr-5">船头板</span>
+                    <div style="min-height: 38px" class="fielddetail border border-1 rounded form-group">
+                        {% if not order.PShippingsample %}
+                        
+                        {% else %}
+                            {{ order.PShippingsample | linebreaks}}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm">
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="main_label">主唛</label>
+                    </div>
+                    <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                        {% if not order.main_label %}
+                        
+                        {% else %}
+                            {{ order.main_label}}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm">
+                <div class="form-group">
+                    <div class="form-group mt-1">
+                        {% if not order.main_label %}
+                            
+                        {% else %}
+                            <img class="w-100" height=125px  src="{{ order.main_label.file.url}}" alt="主唛照片" >
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm">
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="main_tag">挂牌</label>
+                    </div>
+                    <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                        {% if not order.main_tag %}
+                        
+                        {% else %}
+                            {{ order.main_tag}}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm">
+                <div class="form-group mt-1">
+                    {% if not order.main_tag %}
+                        
+                    {% else %}
+                        <img class="w-100" height=125px  src="{{ order.main_tag.file.url}}" alt="挂牌照片" >
+                    {% endif %}
+                    
+                </div>
+            </div>
+            <div class="col-sm">
+                <div class="form-group">
+                    <div class="col-12 text-left pl-0">
+                        <label for="addition_tag">附加挂牌</label>
+                    </div>
+                    <div class="w-100" height=125px class="fielddetail col-12  border border-1 rounded text-left">
+                        {% if not order.addition_tag %}
+                        
+                        {% else %}
+                            {{ order.addition_tag}}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm">
+                <div class="form-group mt-1">
+                    {% if not order.addition_tag %}
+                        
+                    {% else %}
+                        <img class="w-100" height=125px  src="{{ order.addition_tag.file.url}}" alt="附件挂牌照片" >
+                    {% endif %}
+                    
+                </div>
+            </div>
+        </div>
+        <div class="row my-2">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <div class="text-left pl-0">
+                        <label for="addition_tag">备用扣</label>
+                    </div>
+                    <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                        {% if not order.PSparebutton %}
+                        
+                        {% else %}
+                            {{ order.PSparebutton}}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <div class="text-left pl-0">
+                        <label for="addition_tag">挂衣绳</label>
+                    </div>
+                    <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                        {% if not order.PHangingtape %}
+                        
+                        {% else %}
+                            {{ order.PHangingtape}}
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-sm">
+                <div class="form-group">
+                    <div class="text-left pl-0">
+                        <label for="addition_tag">洗水唛</label>
+                    </div>
+                    <div style="min-height: 38px" class="fielddetail col-12  border border-1 rounded text-left">
+                        {% if not order.PWashinglabel %}
+                        
+                        {% else %}
+                            {{ order.PWashinglabel}}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row my-2">
+            <div class="col-sm">
+                <div class="table-responsive">
+                    <label for="">包装要求</label>
+                    <table class="table table-sm table-bordered mb-1">
+                        {% for packingway in packingways %}
+                        <tr class="text-left fielddetail">
+                            <td>{{packingway.description}}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row my-2" style="min-height: 150px;">
+            <div class="col-12">
+                <div class="form-group">
+                    <span >订单数量</span>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th colspan="3" scope="col">颜色</th>
+                                        <th class="align-middle" rowspan="2" scope="col">比列</th>
+                                        <th colspan="6" scope="col">尺码</th>
+                                        <th colspan="2" scope="col">数量</th>
+                                    </tr>
+                                    {% if order.brand.name == 'You+All'%}
+                                    <tr class="text-center">
+                                        <th scope="col">中文</th>
+                                        <th scope="col">英文</th>
+                                        <th scope="col">色号</th>
+                                        <th scope="col">16</th>
+                                        <th scope="col">18</th>
+                                        <th scope="col">20</th>
+                                        <th scope="col">22</th>
+                                        <th scope="col">24</th>
+                                        <th scope="col">26</th>
+                                        <th scope="col">中包</th>
+                                        <th scope="col">件数</th>
+                                    </tr>
+                                    {% else %}
+                                        {% if order.labeltype == 'NUMBER'%}
+                                        <tr class="text-center">
+                                            <th scope="col">中文</th>
+                                            <th scope="col">英文</th>
+                                            <th scope="col">色号</th>
+                                            <th scope="col">6</th>
+                                            <th scope="col">8</th>
+                                            <th scope="col">10</th>
+                                            <th scope="col">12</th>
+                                            <th scope="col">14</th>
+                                            <th scope="col">16</th>
+                                            <th scope="col">中包</th>
+                                            <th scope="col">件数</th>
+                                        </tr>
+                                        {% else %}
+                                            {% if order.created_date.date < date_allysize.date %}
+                                            <tr class="text-center">
+                                                <th scope="col">中文</th>
+                                                <th scope="col">英文</th>
+                                                <th scope="col">色号</th>
+                                                <th scope="col">XS</th>
+                                                <th scope="col">S</th>
+                                                <th scope="col">M</th>
+                                                <th scope="col">L</th>
+                                                <th scope="col">XL</th>
+                                                <th scope="col">XXL</th>
+                                                <th scope="col">中包</th>
+                                                <th scope="col">件数</th>
+                                            </tr>
+                                            {% else %}
+                                            <tr class="text-center">
+                                                <th scope="col">中文</th>
+                                                <th scope="col">英文</th>
+                                                <th scope="col">色号</th>
+                                                <th scope="col">XXS</th>
+                                                <th scope="col">XS</th>
+                                                <th scope="col">S</th>
+                                                <th scope="col">M</th>
+                                                <th scope="col">L</th>
+                                                <th scope="col">XL</th>
+                                                <th scope="col">中包</th>
+                                                <th scope="col">件数</th>
+                                            </tr>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                </thead>
+                                {% if colorqtys %}
+                                    {%for colorqty in colorqtys%}
+                                    <tr  class="text-center fielddetail">
+                                        <td>{{colorqty.color_cn}}</td>
+                                        <td>{{colorqty.color}}</td>
+                                        <td>{{colorqty.color_no}}</td>
+                                        <td>{{colorqty.ratio}}</td>
+                                        {% if colorqty.size1 == 0 %}
+                                        <td></td>
+                                        {% else %}
+                                        <td>{{colorqty.size1}}</td>
+                                        {% endif %}
+                                        {% if colorqty.size2 == 0 %}
+                                        <td></td>
+                                        {% else %}
+                                        <td>{{colorqty.size2}}</td>
+                                        {% endif %}
+                                        {% if colorqty.size3 == 0 %}
+                                        <td></td>
+                                        {% else %}
+                                        <td>{{colorqty.size3}}</td>
+                                        {% endif %}
+                                        {% if colorqty.size4 == 0 %}
+                                        <td></td>
+                                        {% else %}
+                                        <td>{{colorqty.size4}}</td>
+                                        {% endif %}
+                                        {% if colorqty.size5 == 0 %}
+                                        <td></td>
+                                        {% else %}
+                                        <td>{{colorqty.size5}}</td>
+                                        {% endif %}
+                                        {% if colorqty.size6 == 0 %}
+                                        <td></td>
+                                        {% else %}
+                                        <td>{{colorqty.size6}}</td>
+                                        {% endif %}
+                                        {% if colorqty.bags == None %}
+                                        <td></td>
+                                        {% else %}
+                                        <td>{{colorqty.bags}}</td>
+                                        {% endif %}
+                                        <td>{{colorqty.qty}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td class="fielddetail text-center" colspan="12" scope="col">尚未添加</td>
+                                </tr>
+                                {% endif %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm">
+                <div class="form-group">
+                    {% if order.status == 'NEW' or order.status == 'SENT_FACTORY'%}
+                    <a class="btn btn-block btn-outline-primary" href="{% url 'order:orderlistnew' %}" role="button">返回列表</a>
+                    {% elif order.status == 'CONFIRMED'%}
+                    <a class="btn btn-block btn-outline-primary" href="{% url 'order:orderlistconfirmed' %}" role="button">返回列表</a>
+                    {% else %}
+                    <a class="btn btn-block btn-outline-primary" href="{% url 'order:orderlistshipped' %}" role="button">返回列表</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class=" col-sm">
+                <div class="form-group">
+                    <a href="" class="btn btn-block btn-outline-primary" onclick="window.print()" role="button">打印</a>
+                </div>
+            </div>
+            {% if order.status == 'SENT_FACTORY' and request.user.is_factory %}
+            <div class=" col-sm">
+                <div class="form-group">
+                    <a data-title="提示" class="confirmorder btn btn-block btn-outline-primary" href="{% url 'order:orderconfirm' pk=order.pk %}" role="button">确认订单</a>
+                </div>
+            </div> 
+            {% endif %}
+            {% if order.status == 'CONFIRMED' and request.user.is_office%}
+            <div class=" col-sm">
+                <div class="form-group">
+                    <a class="btn btn-block btn-outline-primary" href="{% url 'order:ordershipped' pk=order.pk %}" role="button">订单出货</a>
+                </div>
+            </div> 
+            {% endif %}
+            {% if order.status == 'SHIPPED' and request.user.is_merchandiser%}
+            <div class=" col-sm">
+                <div class="form-group">
+                    <a class="btn btn-block btn-outline-primary" href="{% url 'order:orderreset' pk=order.pk %}" role="button">订单重置</a>
+                </div>
+            </div> 
+            {% endif %}
+            <!-- 测试用 -->
+            {% if request.user.is_merchandiser%}
+            <div class=" col-sm">
+                <div class="form-group">
+                    <a class="btn btn-block btn-outline-primary" href="{% url 'order:ordercopy' pk=order.pk%}" role="button">订单复制</a>
+                </div>
+            </div> 
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block script %}
+<!-- 删除项目确认js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+<script>
+    $('a.confirmorder').confirm({
+        content: "确定订单前请仔细检查价格货期信息？",
+        icon: 'fa fa-warning',
+        typeAnimated: true,
+        buttons: {
+        确认: {
+            btnClass: 'btn-default',
+            action:function(){
+            location.href = this.$target.attr('href');
+            },},
+        取消: {
+            action:function () {
+            //close
+            },
+        }}
+    });
+</script>
+{% endblock %}

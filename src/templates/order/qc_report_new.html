@@ -1,0 +1,50 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load basename %}
+{% load crispy_forms_tags %}
+
+
+{% block css%}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+<!-- 删除项目控件的CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+{% endblock%}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-12 col-md-12">
+        <form  class="border border-1 rounded p-3 mb-3" method="post"  action="{% url 'order:updateqcreport' new_report.pk %}"  novalidate>
+            {% csrf_token %}
+            {% include 'message.html'%}
+            <div class="row">
+                <div class="col form-group">
+                    <ul class="list-group">
+                        <li class="list-group-item p-2">订单号:  {{ order.po}}</li>
+                        <li class="list-group-item p-2">款  号:  {{ order.style_no}}</li>
+                        <li class="list-group-item p-2">工  厂:  {{ order.factory}}</li>
+                        <li class="list-group-item p-2">出货日期:  {{ order.handover_date_f |date:"Y/m/d"  }}</li>
+                    </ul>
+                </div>
+                <div class="col form-group">
+                    <img class="rounded mb-1 mr-3" src="{{ order.avatar.file.url}}" width=130px height=120px alt="款式图" >
+                </div>
+            </div>
+
+            <div class="form-group mt-2">
+                {{ form.product_status  |as_crispy_field }}
+            </div>
+            <div class="form-group mt-2">
+                {{ form.color  |as_crispy_field }}
+            </div>
+            <div class="form-group mt-2">
+                {{ form.ratio  |as_crispy_field }}
+            </div>
+            <div class="form-group">
+                <input type="submit" value="保存" class="btn btn-block btn-outline-primary">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

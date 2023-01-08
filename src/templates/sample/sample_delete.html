@@ -1,0 +1,24 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load basename %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <form method="post">{% csrf_token %}
+        <div class="card w-50">
+            <h6 class="card-header"><strong>确定要删除此样板吗?</strong></h6>
+            <div class="card-body">
+              <h6 class="card-title">样板号: {{sample.sample_no}}</h6>
+              <img  class="rounded" src="{{ sample.os_avatar.file.url }}" width=200 height=200 alt="款式图">
+            </div>
+            <div class="row p-3">
+                <div class="col-3">
+                    <input class="btn btn-block btn-outline-primary" type="submit" value="确认">
+                </div>
+                <div class="col-3">
+                    <a class="btn btn-block btn-outline-primary" href="{% url 'sample:sampleedit' sample.pk %}" role="button">返回</a>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

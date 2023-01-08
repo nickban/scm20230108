@@ -1,0 +1,148 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load basename %}
+{% load crispy_forms_tags %}
+
+
+{% block css%}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+<!-- 删除项目控件的CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+{% endblock%}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-md-12">
+        {% include 'message.html'%}
+        <form  class="border border-1 px-3 pt-3 rounded" method="post" novalidate>
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-12 col-md-3">
+                    <div class="step form-group p-2 border border-1 rounded text-center">
+                        <span><strong>第一步</strong></span>
+                    </div>
+                    <div class="form-group">
+                        {{ form.sample_no | as_crispy_field}}
+                    </div>
+                    <div class="form-group">
+                        {{ form.brand | as_crispy_field}}
+                    </div>
+                    <div class="form-group">
+                        {{ form.designer | as_crispy_field}}
+                    </div>
+                    <div class="form-group">
+                        {{ form.merchandiser | as_crispy_field}}
+                    </div>
+                    <div class="form-group">
+                        {{ form.has_os_sample | as_crispy_field}}
+                    </div>
+                </div>
+                <div class="col-12 col-md-9">
+                    <div class="step åform-group p-2 border border-1 rounded text-center">
+                        <span><strong>第二步</strong></span>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 col-md-4">
+                            {% if sample.pk %}
+                                <div class="form-group mt-2">
+                                    <a href="{% url 'sample:sampleattachadd' pk=sample.pk attachtype='osavatar'%}" role="button">
+                                    <i class="fas fa-file-upload fa-2x"></i></a>
+                                    <p>款式图</p>
+                                    {% if os_avatar %}
+                                        <a href="{{os_avatar.file.url}}"><img  src="{{os_avatar.file.url}}" width=200 height=200></a>
+                                        <a data-title="提示" class="delete" href="{% url 'sample:sampleattachdelete' pk=sample.pk attachtype='osavatar'  attach_pk=os_avatar.pk %}">
+                                        <i class="mx-2 far fa-trash-alt fa-1x"></i></a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-4">
+                            {% if sample.pk %}
+                                <div class="form-group mt-2">
+                                    <a href="{% url 'sample:sampleattachadd' pk=sample.pk attachtype='sizespecs'%}" role="button">
+                                    <i class="fas fa-file-upload fa-2x"></i></a>
+                                    <span>评语附件</span>
+                                    <ul class="list-unstyled mb-0">
+                                        {% for size_spec in size_specs %}
+                                            <li class="mx-3">
+                                                <a href="{{ size_spec.file.url }}">{{ size_spec.file.name |basename }}</a> 
+                                                <a data-title="提示" class="delete" href="{% url 'sample:sampleattachdelete'  pk=sample.pk  attachtype='sizespecs' attach_pk=size_spec.pk %}">
+                                                <i class="mx-2 far fa-trash-alt fa-1x"></i></a> 
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-4">
+                            {% if sample.pk %}
+                                <div class="form-group mt-2">
+                                    <a href="{% url 'sample:sampleattachadd' pk=sample.pk attachtype='os_pics'%}" role="button">
+                                    <i class="fas fa-file-upload fa-2x"></i></a>
+                                    <span>更多原板图片</span>
+                                    {% if os_pics %}
+                                        <a href="{% url 'sample:sampleattachcollection' pk=sample.pk attachtype='os_pics' %}">
+                                        <span class="badge badge-success">查看</span></a>
+                                    {% else %}
+                                        <span class="badge badge-warning">未上传</span>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>       
+            </div>
+            <div class="row mb-4">
+                <div class="col-12 col-md-3">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-block btn-outline-primary">保存</button>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <div class="form-group">
+                        <a class="btn btn-block btn-outline-primary" href="{% url 'sample:sampleaddstep1' %}" role="button">再建一个</a>
+                    </div>
+                </div>
+                {% if sample %}
+                <div class="col-12 col-md-3">
+                    <div class="form-group">
+                        <a class="btn btn-block btn-outline-primary" href="{% url 'sample:sampleedit' sample.pk %}" role="button">进入样板详情页</a>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="col-12 col-md-3">
+                    <div class="form-group">
+                        <a class="btn btn-block btn-outline-primary" href="{% url 'sample:samplelistnew' %}" role="button">返回列表</a>
+                    </div>
+                </div>
+            </div>       
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block script %}
+<!-- 删除项目确认js 此处必须有该js, 否则不起作用-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+
+<script>
+    $('a.delete').confirm({
+        content: "确定要删除此附件吗？",
+        icon: 'fa fa-warning',
+        typeAnimated: true,
+        buttons: {
+        确认: {
+            btnClass: 'btn-default',
+            action:function(){
+            location.href = this.$target.attr('href');
+            },},
+        取消: {
+            action:function () {
+            //close
+            },
+        }}
+    });
+</script>
+
+{% endblock %}

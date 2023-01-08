@@ -1,0 +1,109 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load basename %}
+{% load crispy_forms_tags %}
+
+
+{% block css%}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+<!-- 删除项目控件的CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+{% endblock%}
+
+{% block content %}
+{% include 'message.html'%}
+<p><strong>查货报告汇总:</strong></p>
+<div class="row">
+    <div class="col form-group">
+        <ul class="list-group">
+            <li class="list-group-item p-2">订单号:  {{ order.po}}</li>
+            <li class="list-group-item p-2">款  号:  {{ order.style_no}}</li>
+            <li class="list-group-item p-2">工  厂:  {{ order.factory}}</li>
+        </ul>
+    </div>
+    <div class="col form-group">
+        <ul class="list-group ">
+            <li class="list-group-item p-2">出货日期:  {{ order.handover_date_f |date:"Y/m/d"  }}</li>
+            <li class="list-group-item p-2">查货日期:  {{qc_report.created_date |date:"Y/m/d" }}</li>
+            <li class="list-group-item p-2">查货人员:  {{qc_report.created_by }}</li>
+        </ul>
+    </div>
+    {% if request.user == qc_report.created_by%}
+    <div class="col-2 form-group">
+        <a href="{% url 'order:updateqcreport' pk=qc_report.pk %}"  class="btn btn-block btn-outline-primary p-1" role="button">修改报告</a>
+        <a href="{% url 'order:sendqcreport' pk=qc_report.pk %}"  class="btn btn-block btn-outline-primary p-1" role="button">发送报告</a>
+        <a href="{% url 'order:qrdelete' pk=qc_report.pk %}"  class="btn btn-block btn-outline-primary p-1" role="button">删除报告</a>
+    </div>
+    {% endif %}
+    <div class="col-2 form-group">
+        <a href="" class="btn btn-block btn-outline-primary p-1" onclick="window.print()" role="button">打印报告</a>
+        <a class="btn btn-block btn-outline-primary p-1" href="{% url 'order:qcreportpicscollection' pk=qc_report.pk%}" role="button">图片汇总</a>
+        <a class="btn btn-block btn-outline-primary p-1" href="{% url 'order:orderlistconfirmed' %}" role="button">返回列表</a>
+    </div>
+    <div class="col form-group">
+        <img class="rounded mb-1 mr-3" src="{{ order.avatar.file.url}}" width=130px height=120px alt="款式图" >
+    </div>
+</div>
+
+<table id="dataTable" class="table responsive-table table-hover mt-3">
+    <thead>
+    <tr>
+        <th style="width: 10%">检查项目</th>
+        <th style="width: 8%">编号</th>
+        <th style="width: 10%">名称</th>
+        <th style="width: 25%">描述</th>
+        <th style="width: 25%">QC备注</th>
+        <th style="width: 10%">瑕疵等级</th>
+        <th style="width: 8%">比列</th>
+        <th style="width: 8%">照片</th>
+    </tr>
+    </thead>
+    <tbody>
+        {% for check_record in check_records%}
+        <tr  class="tr">
+            <td>{{check_record.check_item.name}}</td>
+            <td>{{check_record.check_point.number}}</td>
+            <td>{{check_record.check_point.name}}</td>
+            {% if check_record.check_point.description == None %}
+            <td></td>
+            {% else %}
+            <td>{{check_record.check_point.description}}</td>
+            {% endif %}
+            
+            <td>{{check_record.comments}}</td>
+            
+            {% if check_record.grade == None %}
+                <td></td>
+            {% else %}
+                <td>{{check_record.get_grade_display}}</td>
+            {% endif %}
+        
+            <td>{{check_record.ratio}}</td>
+
+            <td>
+                {% if request.user == qc_report.created_by%}
+                <a id={{check_record.pk}} class="upload btn btn-block btn-outline-primary"  role="button">上传</a>
+                {% endif %}
+                <a id={{check_record.pk}} class="collection btn btn-block btn-outline-primary"  role="button">查看</a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block script %}
+<script>
+    $(document).on('click', '.upload', function () {
+      var id = $(this).attr("id");
+      url = '/order/' + 'checkrecord/' + id + '/picsadd/'
+      window.open(url, '_blank','location=yes,height=400,width=600,scrollbars=yes,status=yes').focus();
+    });
+
+    $(document).on('click', '.collection', function () {
+      var id = $(this).attr("id");
+      url = '/order/' + 'checkrecord/' + id + '/picscollection/'
+      window.open(url, '_blank','location=yes,scrollbars=yes,status=yes').focus();
+    });
+</script>
+{% endblock %}

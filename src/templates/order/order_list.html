@@ -1,0 +1,674 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+
+{% block css%}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    {% if listtype == 'new'%}
+    <p style="font-weight: bolder;">当前位置: 未确认订单</p>
+    {% endif %}
+
+    {% if  listtype == 'confirmed'%}
+    <p style="font-weight: bolder;">当前位置: 已确认订单</p>
+    {% endif %}
+
+    {% if  listtype == 'shipped'%}
+    <p style="font-weight: bolder;">当前位置: 已出货订单</p>
+    {% endif %}
+
+  </div>
+</div>
+<ul class="nav nav-tabs" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" data-toggle="tab" href="#list">订单列表</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#progress">进度列表</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#qc">品控列表</a>
+  </li>
+</ul>
+<!-- Tab 标签项 -->
+<div class="tab-content">
+  <div id="list" class="tab-pane active"><br>
+    <div class="table-responsive">
+      <form action="{% url 'order:orderlistinfo'%}" method="post">
+        {%csrf_token%}
+        {% if  listtype == 'confirmed'%}
+          <div class="form-group">
+            {% if request.user.is_merchandiser or request.user.is_qc%}
+            {% if  shipbyweek != 'shipbyweek'%}
+            <input type="submit" value="订单信息汇总" class="col-2 btn btn-outline-primary">
+            {% endif %}
+            {% endif %}
+            <div class="row mb-3">
+
+              {% if  shipbyweek == 'shipbyweek'%}
+              <div class=" col-2">
+                <div class="form-group">
+                  <a class="btn btn-block btn-outline-primary"  href="{% url 'order:ordershipbyweek'  999 %}">超期订单</a>
+                </div>
+              </div>
+              <div class=" col-2">
+                <div class="form-group">
+                  <a class="btn btn-block btn-outline-primary"  href="{% url 'order:ordershipbyweek'  0 %}">本周出货</a>
+                </div>
+              </div>
+              <div class=" col-2">
+                <div class="form-group">
+                  <a class="btn btn-block btn-outline-primary"  href="{% url 'order:ordershipbyweek'  pk_next %}">下一周</a>
+                </div>
+              </div>
+              <div class=" col-2">
+                <div class="form-group">
+                  <a class="btn btn-block btn-outline-primary"  href="{% url 'order:ordershipbyweek'  pk_before %}">上一周</a>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+
+        <table id="orderlistnew" class="table table-hover">
+          <thead>
+            <tr>
+              {% if request.user.is_merchandiser or request.user.is_merchandiser_manager or request.user.is_qc %}
+              <th></th>
+              {% endif %}
+              <th>创建日期</th>
+              <th>款式图</th>
+              <th>订单号</th>
+              <th>款号</th>
+              <th>品牌</th>
+              <th>买手</th>
+              <!-- <th>跟单</th> -->
+              <th>工厂</th>
+              <!-- <th>运输</th> -->
+              <th>款式</th>
+              <th>工厂交期</th>
+              {% if request.user.is_merchandiser or request.user.is_qc %}
+                <th>客人交期</th>
+              {% endif %}
+              <!-- 表格不够宽，暂时停用 -->
+              <!-- {% if not request.user.is_factory%}
+              <th>客人交期</th>
+              {% endif %} -->
+              {% if listtype == 'confirmed' or listtype == 'shipped' %}
+                <th>装箱单</th>
+              {% endif %}
+              <!-- <th>目的地</th> -->
+              <!-- <th>小单</th> -->
+              <th>资料</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in orders %}
+              <tr>
+                {% if request.user.is_merchandiser or request.user.is_merchandiser_manager or request.user.is_qc%}
+                <td class="text-right"><input class="form-check-input" type="checkbox" value="{{order.pk}}"  name="orderpk"></td>
+                {% endif %}
+                <td>{{ order.created_date |date:"Y/m/d"  }}</td>
+                <!-- <td>{{ order.created_date |date:"SHORT_DATE_FORMAT"  }}</td> -->
+                <td><a href="{{order.avatar.file.url}}"><img src="{{ order.avatar.file.url }}" width=100px, height=100px></td></a>
+                {% if order.status == 'SHIPPED' %}
+                  <td><a href="{% url 'order:orderdetail'  order.pk %}">{{ order.po }}</a></td>
+                {% else %}
+                  {% if request.user.is_merchandiser or request.user.is_merchandiser_manager%}
+                  <td><a href="{% url 'order:orderedit'  order.pk %}">{{ order.po }}</a></td>
+                  {% else %}
+                  <td><a href="{% url 'order:orderdetail'  order.pk %}">{{ order.po }}</a></td>
+                  {% endif %}
+                {% endif %}
+                <td>{{ order.style_no }}</td>
+                <td>{{ order.brand }}</td>
+                <td>{{ order.designer }}</td>
+                <!-- <td>{{ order.merchandiser }}</td> -->
+                {% if order.factory == None %}
+                <td></td>
+                {% else %}
+                <td>{{ order.factory }}</td>
+                {% endif %}
+                <td>{{ order.style }}</td>
+                <!-- <td>{{ order.get_tran_type_display }}</td> -->
+                {% if order.handover_date_f == None %}
+                <td></td>
+                {% else %}
+                <td>{{ order.handover_date_f |date:"Y/m/d" }}</td>
+                {% endif %}
+
+                {% if request.user.is_merchandiser or request.user.is_qc %}
+                  {% if order.handover_date_d == None %}
+                  <td></td>
+                  {% else %}
+                  <td>{{ order.handover_date_d |date:"Y/m/d" }}</td>
+                  {% endif %}
+                {% endif %}
+                <!-- <td>{{ order.handover_date_f |date:"SHORT_DATE_FORMAT" }}</td> -->
+                <!-- 表格不够宽，暂时停用 -->
+                <!-- {% if not request.user.is_factory%}
+                  {% if order.handover_date_d == None %}
+                  <td></td>
+                  {% else %}
+                  <td>{{ order.handover_date_d |date:"SHORT_DATE_FORMAT" }}</td>
+                  {% endif %}
+                {% endif %} -->
+                {% if listtype == 'confirmed' or listtype == 'shipped' %}
+                  {% if order.packing_ctns.all.count > 0 %}
+                    {% if order.packing_status.status == 'NEW'%}
+                      <td><a href="{% url 'order:packinglistadd' pk=order.pk%}">查看</a></td>
+                    {% else %}
+                      <td><a href="{% url 'order:packinglistdetail' pk=order.pk%}">查看</a></td>
+                    {% endif %}
+                  {% else %}
+                    <td>
+                      {% if request.user.is_factory %}
+                      <a href="{% url 'order:packinglistadd' pk=order.pk%}">创建</a>
+                      {% endif%}
+                    </td>
+                  {% endif %}
+                {% endif %}
+                <!-- <td>{{ order.get_destination_display }}</td> -->
+                <!-- <td>{{ order.get_childorder_display }}</td> -->
+                <td>{{ order.get_ziliao_display }}</td>
+                <td>{{ order.get_status_display }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </form>
+    </div>
+  </div>
+  <div id="progress" class="tab-pane fade"><br>
+    {% if  listtype == 'confirmed'%}
+    <div class="row mb-3">
+
+      {% if  shipbyweek == 'shipbyweek'%}
+      <div class=" col-2">
+        <div class="form-group">
+          <a class="btn btn-block btn-outline-primary"  href="{% url 'order:ordershipbyweek'  999 %}">超期订单</a>
+        </div>
+      </div>
+      <div class=" col-2">
+        <div class="form-group">
+          <a class="btn btn-block btn-outline-primary"  href="{% url 'order:ordershipbyweek'  0 %}">本周出货</a>
+        </div>
+      </div>
+      <div class=" col-2">
+        <div class="form-group">
+          <a class="btn btn-block btn-outline-primary"  href="{% url 'order:ordershipbyweek'  pk_next %}">下一周</a>
+        </div>
+      </div>
+      <div class=" col-2">
+        <div class="form-group">
+          <a class="btn btn-block btn-outline-primary"  href="{% url 'order:ordershipbyweek'  pk_before %}">上一周</a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+    <div class="table-responsive">
+      <table id="orderlistnew_p" class="table table-hover">
+        <thead>
+          <tr>
+            <th style="min-width: 70px;">创建日期</th>
+            <th style="min-width: 50px;">订单号</th>
+            <th style="min-width: 50px;">款号</th>
+            <th style="min-width: 50px;">跟单</th>
+            <th style="min-width: 50px;">工厂</th>
+            <th style="min-width: 70px;">工厂交期</th>
+            <th style="min-width: 70px;">款式图</th>
+            <th style="min-width: 300px;">生产板</th>
+            <th style="min-width: 200px;">大货布</th>
+            <th style="min-width: 200px;">船头板</th>
+            <th style="min-width: 50px;">状态</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+          <tr>
+            <td>{{ order.created_date |date:"Y/m/d"  }}</td>
+            {% if order.status == 'SHIPPED' %}
+              <td><a href="{% url 'order:orderdetail'  order.pk %}">{{ order.po }}</a></td>
+            {% else %}
+              {% if request.user.is_merchandiser or request.user.is_merchandiser_manager%}
+                <td><a href="{% url 'order:orderedit'  order.pk %}">{{ order.po }}</a></td>
+              {% else %}
+                <td><a href="{% url 'order:orderdetail'  order.pk %}">{{ order.po }}</a></td>
+              {% endif %}
+            {% endif %}
+            <td>{{ order.style_no }}</td>
+            <td>{{ order.merchandiser }}</td>
+            {% if order.factory == None %}
+            <td></td>
+            {% else %}
+            <td>{{ order.factory }}</td>
+            {% endif %}
+            {% if order.handover_date_f == None %}
+            <td></td>
+            {% else %}
+            <td>{{ order.handover_date_f |date:"Y/m/d"  }}</td>
+            {% endif %}
+            <td><img src="{{ order.avatar.file.url }}" width=100px, height=100px></td>
+            <!-- 生产板列表 -->
+            <td>
+              <!-- 通过class:js-create-fs激活js -->
+              {% if request.user.is_merchandiser or request.user.is_merchandiser_manager%}
+              <i class="fas fa-plus-circle fa-1x js-create-fs"></i>
+              <i class="fas fa-list-ul js-list-fsall"></i>
+              <i class="fas fa-list-ol js-list-fs3"></i>
+              {% endif %}
+              <!-- 设置唯一id, 传值给js, 因为页面有多个进度种类,前面加类别fs -->
+              <ul id=fs{{order.pk}} class="list-unstyled">
+                  {% if order.fittingsamples.count > 0 %}
+                    <!-- 每个订单只显示最近3条进度记录 -->
+                    {% for each in order.fittingsamples.all|slice:":3" %}
+                      {% if each.status == 'WARNING' %}
+                      <li style="color:red;">{{each.sample}}
+                        {% if request.user.is_merchandiser or request.user.is_merchandiser_manager%}
+                          <!-- 删除进度图标, 设置id,传值js, fs-delete 用于js事件 -->
+                          <i id=fsd{{each.pk}} class="mx-2 fs-delete far fa-trash-alt fa-1x"></i>
+                          <!-- 编辑进度图标, 设置id,传值js, fs-edit 用于js事件 -->
+                          <i id=fse{{each.pk}} class="fs-edit fas fa-edit fa-1x"></i>
+                        {%endif%}
+                      </li>
+                      {% else %}
+                      <li >{{each.sample}}
+                        {% if request.user.is_merchandiser or request.user.is_merchandiser_manager%}
+                          <i id=fsd{{each.pk}} class="mx-2 fs-delete far fa-trash-alt fa-1x"></i>
+                          <i id=fse{{each.pk}} class="fs-edit fas fa-edit fa-1x"></i>
+                        {% endif %}
+                      </li>
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+              </ul>
+            </td>
+            <!-- 大货布列表 -->
+            <td>
+              <!-- 通过class:js-create-bf激活js -->
+              {% if request.user.is_merchandiser or request.user.is_merchandiser_manager%}
+              <i class="fas fa-plus-circle fa-1x js-create-bf"></i>
+              {% endif%}
+              <!-- 设置唯一id, 传值给js, 因为页面有多个进度种类,前面加类别fs -->
+              <ul id=bf{{order.pk}} class="list-unstyled">
+                  {% if order.bulkfabrics.count > 0 %}
+                    <!-- 每个订单只显示最近3条进度记录 -->
+                    {% for each in order.bulkfabrics.all|slice:":3" %}
+                      {% if each.status == 'WARNING' %}
+                      <li style="color:red;">{{each.bulk_fabric}}
+                      {% if request.user.is_merchandiser or request.user.is_merchandiser_manager%}
+                        <!-- 删除进度图标, 设置id,传值js, fs-delete 用于js事件 -->
+                        <i id=bfd{{each.pk}} class="mx-2 bf-delete far fa-trash-alt fa-1x"></i>
+                        <!-- 编辑进度图标, 设置id,传值js, fs-edit 用于js事件 -->
+                        <i id=bfe{{each.pk}} class="bf-edit fas fa-edit fa-1x"></i>
+                      {% endif %}
+                      </li>
+                      {% else %}
+                      <li >{{each.bulk_fabric}}
+                      {% if request.user.is_merchandiser or request.user.is_merchandiser_manager%}
+                        <i id=bfd{{each.pk}} class="mx-2 bf-delete far fa-trash-alt fa-1x"></i>
+                        <i id=bfe{{each.pk}} class="bf-edit fas fa-edit fa-1x"></i>
+                      {% endif %}
+                      </li>
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+              </ul>
+            </td>
+            <!-- 船头板列表 -->
+            <td>
+              <!-- 通过class:js-create-ss激活js -->
+              {% if request.user.is_merchandiser or request.user.is_merchandiser_manager%}
+              <i class="fas fa-plus-circle fa-1x js-create-ss"></i>
+              {% endif%}
+              <!-- 设置唯一id, 传值给js, 因为页面有多个进度种类,前面加类别fs -->
+              <ul id=ss{{order.pk}} class="list-unstyled">
+                  {% if order.shippingsamples.count > 0 %}
+                    <!-- 每个订单只显示最近3条进度记录 -->
+                    {% for each in order.shippingsamples.all|slice:":3" %}
+                      {% if each.status == 'WARNING' %}
+                      <li style="color:red;">{{each.shipping_sample}}
+                      {% if request.user.is_merchandiser or request.user.is_merchandiser_manager%}
+                        <!-- 删除进度图标, 设置id,传值js, ss-delete 用于js事件 -->
+                        <i id=ssd{{each.pk}} class="mx-2 ss-delete far fa-trash-alt fa-1x"></i>
+                        <!-- 编辑进度图标, 设置id,传值js, ss-edit 用于js事件 -->
+                        <i id=sse{{each.pk}} class="ss-edit fas fa-edit fa-1x"></i>
+                      {% endif %}
+                      </li>
+                      {% else %}
+                      <li >{{each.shipping_sample}}
+                      {% if request.user.is_merchandiser or request.user.is_merchandiser_manager%}
+                        <i id=ssd{{each.pk}} class="mx-2 ss-delete far fa-trash-alt fa-1x"></i>
+                        <i id=sse{{each.pk}} class="ss-edit fas fa-edit fa-1x"></i>
+                      {% endif %}
+                      </li>
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+              </ul>
+            </td>
+            <td>{{ order.get_status_display }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div id="qc" class="tab-pane fade"><br>
+    <div class="table-responsive">
+      <form action="{% url 'order:newqcreport'%}" method="post">
+        {%csrf_token%}
+
+        {% if  listtype == 'confirmed'%}
+        <div class="row mb-3">
+          {% if  request.user.is_qc %}
+          <div class=" col-2">
+            <div class="form-group">
+              <input type="submit" value="新建查货报告" class="btn btn-block btn-outline-primary">
+            </div>
+          </div>
+          {% endif %}
+          {% if  shipbyweek == 'shipbyweek'%}
+          <div class=" col-2">
+            <div class="form-group">
+              <a class="btn btn-block btn-outline-primary"  href="{% url 'order:ordershipbyweek'  999 %}">超期订单</a>
+            </div>
+          </div>
+          <div class=" col-2">
+            <div class="form-group">
+              <a class="btn btn-block btn-outline-primary"  href="{% url 'order:ordershipbyweek'  0 %}">本周出货</a>
+            </div>
+          </div>
+          <div class=" col-2">
+            <div class="form-group">
+              <a class="btn btn-block btn-outline-primary"  href="{% url 'order:ordershipbyweek'  pk_next %}">下一周</a>
+            </div>
+          </div>
+          <div class=" col-2">
+            <div class="form-group">
+              <a class="btn btn-block btn-outline-primary"  href="{% url 'order:ordershipbyweek'  pk_before %}">上一周</a>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- {% if  listtype == 'confirmed'%}
+        {% if  request.user.is_qc %}
+        <div class="col-2 pl-0 form-group">
+          <input type="submit" value="新建查货报告" class="btn btn-block btn-outline-primary">
+        </div>
+        {% endif %}
+        {% endif %} -->
+        <table id="orderlistnew_qc" class="table table-hover">
+          <thead>
+            <tr>
+              <th></th>
+              <th style="min-width: 70px;">创建日期</th>
+              <th style="min-width: 50px;">订单号</th>
+              <th style="min-width: 50px;">款号</th>
+              <th style="min-width: 50px;">跟单</th>
+              <th style="min-width: 50px;">工厂</th>
+              <th style="min-width: 70px;">工厂交期</th>
+              {% if request.user.is_merchandiser or request.user.is_merchandiser_manager or request.user.is_qc%}
+              <th style="min-width: 70px;">客人交期</th>
+              {% endif %}
+              <th style="min-width: 70px;">款式图</th>
+              <th style="min-width: 70px;">装箱单</th>
+              <th style="min-width: 300px;">大货进度</th>
+              <th style="min-width: 300px;">查货报告</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in orders %}
+            <tr>
+              <td class="text-right"><input class="form-check-input" type="checkbox" value="{{order.pk}}"  name="orderpk"></td>
+              <td>{{ order.created_date |date:"Y/m/d"  }}</td>
+              {% if order.status == 'SHIPPED' %}
+                <td><a href="{% url 'order:orderdetail'  order.pk %}">{{ order.po }}</a></td>
+              {% else %}
+                {% if request.user.is_merchandiser or request.user.is_merchandiser_manager%}
+                  <td><a href="{% url 'order:orderedit'  order.pk %}">{{ order.po }}</a></td>
+                {% else %}
+                  <td><a href="{% url 'order:orderdetail'  order.pk %}">{{ order.po }}</a></td>
+                {% endif %}
+              {% endif %}
+              <td>{{ order.style_no }}</td>
+              <td>{{ order.merchandiser }}</td>
+              {% if order.factory == None %}
+              <td></td>
+              {% else %}
+              <td>{{ order.factory }}</td>
+              {% endif %}
+              {% if order.handover_date_f == None %}
+              <td></td>
+              {% else %}
+              <td>{{ order.handover_date_f |date:"Y/m/d" }}</td>
+              {% endif %}
+
+              {% if request.user.is_merchandiser or request.user.is_merchandiser_manager or request.user.is_qc%}
+                {% if order.handover_date_d == None %}
+                <td></td>
+                {% else %}
+                <td>{{ order.handover_date_d |date:"Y/m/d" }}</td>
+                {% endif %}
+              {% endif %}
+
+              <td><img src="{{ order.avatar.file.url }}" width=100px, height=100px></td>
+
+
+              {% if order.packing_ctns.all.count > 0 %}
+                  <td><a href="{% url 'order:packinglistdetail' pk=order.pk%}">查看</a></td>
+              {% else %}
+                  <td></td>
+              {% endif %}
+
+
+              <!-- 大货进度 -->
+              <td>
+                <!-- 通过class:js-create-bf激活js -->
+                {% if request.user.is_merchandiser or request.user.is_merchandiser_manager or request.user.is_qc%}
+                <i class="fas fa-plus-circle fa-1x js-create-pro"></i>
+                <i class="fas fa-list-ul js-list-prall"></i>
+                <i class="fas fa-list-ol js-list-pr3"></i>
+                {% endif%}
+                <!-- 设置唯一id, 传值给js, 因为页面有多个进度种类,前面加类别fs -->
+                <ul id=pr{{order.pk}} class="list-unstyled">
+                    {% if order.productions.count > 0 %}
+                      <!-- 每个订单只显示最近3条进度记录 -->
+                      {% for each in order.productions.all|slice:":3" %}
+                        {% if each.status == 'WARNING' %}
+                        <li style="color:red;">{{each.production}}
+                        {% if request.user.is_merchandiser or request.user.is_merchandiser_manager or request.user.is_qc %}
+                          <!-- 删除进度图标, 设置id,传值js, fs-delete 用于js事件 -->
+                          <i id=prd{{each.pk}} class="mx-2 pr-delete far fa-trash-alt fa-1x"></i>
+                          <!-- 编辑进度图标, 设置id,传值js, fs-edit 用于js事件 -->
+                          <i id=pre{{each.pk}} class="pr-edit fas fa-edit fa-1x"></i>
+                        {% endif %}
+                        </li>
+                        {% else %}
+                        <li >{{each.production}}
+                        {% if request.user.is_merchandiser or request.user.is_merchandiser_manager or request.user.is_qc%}
+                          <i id=prd{{each.pk}} class="mx-2 pr-delete far fa-trash-alt fa-1x"></i>
+                          <i id=pre{{each.pk}} class="pr-edit fas fa-edit fa-1x"></i>
+                        {% endif %}
+                        </li>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                </ul>
+              </td>
+              <td>
+                <i class="fas fa-list-ul js-list-qrall"></i>
+                <i class="fas fa-list-ol js-list-qr3"></i>
+                <ul id=qr{{order.pk}} class="list-unstyled">
+                    {% if order.qcreports.count > 0 %}
+                      <!-- 每个订单只显示最近3条进度记录 -->
+                      {% for each in order.qcreports.all|slice:":3" %}
+                        <li >{{each.created_date |date:"Y/m/d" }} - {{each.created_by}} 
+                          -
+                          {% if each.product_status == None %}
+                          {% elif each.product_status == NEW_P%}
+                          刚出成品
+                          {% elif each.product_status == FINISH_P%}
+                          成品全部完成
+                          {% else %}
+                          大货包装完成
+                          {% endif %}
+                          -
+                             <a href="{{ each.get_absolute_url }}">报告</a>
+                        </li>
+                      {% endfor %}
+                    {% endif %}
+                </ul>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 生产板的弹出框 -->
+<div class="modal fade" id="modal-fs">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+<!-- 大货布的弹出框 -->
+<div class="modal fade" id="modal-bf">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+<!-- 船头板的弹出框 -->
+<div class="modal fade" id="modal-ss">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<!-- 大货的弹出框 -->
+<div class="modal fade" id="modal-pr">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js" ></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap4.min.js" ></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js" ></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.bootstrap4.min.js" ></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js" ></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js" ></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js" ></script>
+
+<!-- 生产板进度js -->
+<script src="{% static 'js/fittingsample.js'%}"></script>
+<script src="{% static 'js/bulkfabric.js'%}"></script>
+<script src="{% static 'js/production.js'%}"></script>
+<script src="{% static 'js/shippingsample.js'%}"></script>
+<script src="{% static 'js/qcreport.js'%}"></script>
+<!-- datatable的js设置 -->
+<script>
+$(document).ready( function () {
+  var table1 =$('#orderlistnew').DataTable({
+        lengthChange: true,
+        buttons: [         {
+            extend: 'excel',
+            text: '导出EXCEL文件'
+        }, ],
+        "language": {
+          "processing": "处理中...",
+          "loadingRecords": "载入中...",
+          "lengthMenu": "显示 _MENU_ 项结果",
+          "zeroRecords": "没有符合的结果",
+          "info": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+          "infoEmpty": "显示第 0 至 0 项结果，共 0 项",
+          "infoFiltered": "(从 _MAX_ 项结果中过滤)",
+          "infoPostFix":  "",
+          "search": "搜索:",
+          "paginate": {
+            "next": "下一页",
+            "previous": "上一页",
+          }, 
+        },
+        "order": [[ 0, 'desc' ],]
+    });
+    var table2 =$('#orderlistnew_p').DataTable({
+        lengthChange: true,
+        buttons: [         {
+            extend: 'excel',
+            text: '导出EXCEL文件'
+        }, ],
+        "language": {
+          "processing": "处理中...",
+          "loadingRecords": "载入中...",
+          "lengthMenu": "显示 _MENU_ 项结果",
+          "zeroRecords": "没有符合的结果",
+          "info": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+          "infoEmpty": "显示第 0 至 0 项结果，共 0 项",
+          "infoFiltered": "(从 _MAX_ 项结果中过滤)",
+          "infoPostFix":  "",
+          "search": "搜索:",
+          "paginate": {
+            "next": "下一页",
+            "previous": "上一页",
+          }, 
+        },
+        "order": [[ 0, 'desc' ],]
+    });
+    var table3 =$('#orderlistnew_qc').DataTable({
+        lengthChange: true,
+        buttons: [         {
+            extend: 'excel',
+            text: '导出EXCEL文件'
+        }, ],
+        "language": {
+          "processing": "处理中...",
+          "loadingRecords": "载入中...",
+          "lengthMenu": "显示 _MENU_ 项结果",
+          "zeroRecords": "没有符合的结果",
+          "info": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+          "infoEmpty": "显示第 0 至 0 项结果，共 0 项",
+          "infoFiltered": "(从 _MAX_ 项结果中过滤)",
+          "infoPostFix":  "",
+          "search": "搜索:",
+          "paginate": {
+            "next": "下一页",
+            "previous": "上一页",
+          }, 
+        },
+        "order": [[ 0, 'desc' ],]
+    });
+
+    table1.buttons().container()
+        .appendTo( '#orderlistnew_wrapper .col-md-6:eq(0)' );
+    table2.buttons().container()
+        .appendTo( '#orderlistnew_p_wrapper .col-md-6:eq(0)' );
+    table3.buttons().container()
+        .appendTo( '#orderlistnew_qc_wrapper .col-md-6:eq(0)' );
+
+} );
+</script>
+{% endblock %}

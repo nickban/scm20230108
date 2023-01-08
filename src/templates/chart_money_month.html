@@ -1,0 +1,173 @@
+{% extends 'base_home.html' %}
+
+{% block css%}
+<link href="https://netdna.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.2.0/css/datepicker.min.css" rel="stylesheet">
+{% endblock %}
+
+
+
+{% block content %}
+<div class="col-md-2">
+    <label for="cc-expiration" class="form-label">请选择年份</label>
+    <input type="text" class="form-control" name="datepicker" id="datepicker" />
+    <button type="button" class="btn btn-primary report">生产报告</button>
+  </div>
+
+<div style="position: relative; height:100vh; width:80vw">
+    <canvas id="myChart">
+    </canvas>
+</div>
+{% endblock %}
+
+
+{% block script %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="https://netdna.bootstrapcdn.com/bootstrap/2.3.2/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.2.0/js/bootstrap-datepicker.min.js"></script>
+<script>
+
+var currentTime = new Date()
+var this_year = currentTime.getFullYear()
+
+
+$('#datepicker').val(this_year)
+
+var endpoint_path = '/report/api/money_month/data/'
+var endpoint = endpoint_path + this_year
+
+
+$(".report").click(function(event) {
+    var year = $('#datepicker').val();
+
+    var endpoint_path = '/report/api/money_month/data/'
+    var endpoint = endpoint_path + year
+    console.log(endpoint)
+
+
+    $.ajax({
+        method: "GET",
+        url: endpoint,
+        success: function(data){
+        setchart(data);
+        },
+        error: function(error_data){
+        }
+    });
+
+});
+
+
+$.ajax({
+    method: "GET",
+    url: endpoint,
+    success: function(data){
+    setchart(data);
+    },
+    error: function(error_data){
+    }
+});
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+       color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+ }
+
+
+function setchart(data) {
+var ctx = document.getElementById("myChart").getContext('2d');
+var myChart = new Chart(ctx, {
+type: 'bar',
+data: {
+    labels: data.labels,
+    datasets: [{
+        label: 'ALLY_确认订单',
+        data: data.data_ally_confirm,
+        fill: true,
+        borderWidth: 2,
+        // backgroundColor: window.chartColors.red,
+        backgroundColor: getRandomColor(),
+        // borderColor: window.chartColors.red,
+    },
+    {
+        label: 'ALLY_全部订单',
+        data: data.data_ally_all,
+        fill: true,
+        borderWidth: 2,
+        // backgroundColor: window.chartColors.red,
+        backgroundColor: getRandomColor(),
+        // borderColor: window.chartColors.red,
+    },
+    {
+        label: 'VG_确认订单',
+        data: data.data_vg_confirm,
+        fill: true,
+        borderWidth: 2,
+        // backgroundColor: window.chartColors.red,
+        backgroundColor: getRandomColor(),
+        // borderColor: window.chartColors.red,
+    },
+    {
+        label: 'VG_全部订单',
+        data: data.data_vg_all,
+        fill: true,
+        borderWidth: 2,
+        // backgroundColor: window.chartColors.red,
+        backgroundColor: getRandomColor(),
+        // borderColor: window.chartColors.red,
+    },
+
+]
+},
+options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: '每月接单金额总计'
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: '月份'
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: '单位:RMB'
+                    },
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+});
+
+}
+
+
+$("#datepicker").datepicker({
+    format: "yyyy",
+    viewMode: "years", 
+    minViewMode: "years",
+    autoclose:true
+}); 
+
+</script>
+{% endblock %}

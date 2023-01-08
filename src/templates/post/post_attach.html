@@ -1,0 +1,28 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/fileupload.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fileinput.css' %}">
+{% endblock %}
+
+{% block content %}
+    <form  method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div id="div_id_attachment" class="form-group attachment ">
+            <input id="fileupload" type="file" name="file" class="inputfile" data-url="{% url 'post:postattach' post.pk %}" multiple>
+            <label for="fileupload">请点击选择文件...</label>
+        </div>
+        <a class="btn btn-outline-primary" href="{% url 'post:postedit' post.pk %}" role="button">返回</a>
+    </form>
+{% endblock %}
+
+{% block script%}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+
+<script src="{% static 'js/jquery.ui.widget.js' %}"></script>
+<script src="{% static 'js/jquery.iframe-transport.js' %}"></script>
+<script src="{% static 'js/jquery.fileupload.js' %}"></script>
+<script src="{% static 'js/fileupload.js' %}"></script>
+{% endblock %}

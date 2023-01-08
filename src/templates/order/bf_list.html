@@ -1,0 +1,14 @@
+
+
+{% for each in qs|slice:":3"%}
+{% if each.status == 'WARNING' %}
+<li style="color:red;">{{each.bulk_fabric}}
+<i id=bfd{{each.pk}} class="mx-2 bf-delete far fa-trash-alt fa-1x"></i>
+<i id=bfe{{each.pk}} class="bf-edit fas fa-edit fa-1x"></i></li>
+{% else %}
+<li >{{each.bulk_fabric}}
+<i id=bfd{{each.pk}} class="mx-2 bf-delete far fa-trash-alt fa-1x"></i>
+<i id=bfe{{each.pk}} class="bf-edit fas fa-edit fa-1x"></i></li>
+{% endif %}
+{% endfor %}
+

@@ -1,0 +1,39 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load basename %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+
+{% block css%}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+{% endblock%}
+
+{% block content %}
+<div class="row" style="min-height: 150px;">
+    <div class="col-sm">
+    {% include 'message.html'%}
+        <p style="font-weight: bolder; margin-bottom: 3px;">请选择包装方式:</p>
+        <form action="{% url 'order:packingwayadd' pk=order.pk%}" method="post">
+            {%csrf_token%}
+            <div class="table-responsive">
+                <table  class="table table-hover  table-bordered mb-0">
+                    {% for packingway in packingways %}
+                        <tr class="text-left">
+                            {% if packingway.pk in orderpackingways%}
+                            <td class="text-right"><input class="form-check-input" type="checkbox" value="{{packingway.pk}}"  checked="checked" name="packingwaypk"></td>
+                            {% else %}
+                            <td class="text-right"><input class="form-check-input" type="checkbox" value="{{packingway.pk}}"  name="packingwaypk"></td>
+                            {% endif %}
+                            <td >{{ packingway.description}}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="提交" class="btn btn-block btn-outline-primary">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

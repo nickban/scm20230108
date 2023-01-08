@@ -1,0 +1,35 @@
+{% extends 'base_file_upload.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+<!-- fileupload 参考这个网站做法 https://jsfiddle.net/kxom8jr0/ -->
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/fileupload.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fileinput.css' %}">
+
+{% endblock %}
+
+{% block content %}
+    <form  method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div id="div_id_attachment" class="form-group attachment ">
+            <input id="fileupload" type="file" name="file" class="inputfile" data-url="{% url 'order:checkrecordpicsadd' pk=checkrecord.pk %}"  multiple>
+            <label for="fileupload"><a class="btn btn-outline-primary" role="button">请选择文件.......</a></label>
+        </div>
+        <a class="col-3 btn btn-outline-primary" role="button" onclick="window.close();">完成</a>
+
+    </form>
+{% endblock %}
+
+{% block script%}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+
+<script src="{% static 'js/jquery.ui.widget.js' %}"></script>
+<script src="{% static 'js/jquery.iframe-transport.js' %}"></script>
+<script src="{% static 'js/jquery.fileupload.js' %}"></script>
+<script src="{% static 'js/fileupload.js' %}"></script>
+
+{% endblock %}
+
+<div class="card-footer">
+</div>

@@ -1,0 +1,187 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load basename %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+
+{% block css%}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+{% endblock%}
+
+{% block content %}
+<div class="row" style="min-height: 150px;">
+    <div class="col-12">
+        <div class="form-group">
+            <p style="font-weight: bolder; margin-bottom: 3px;">订单数量</p>
+            <div class="table-responsive">
+                <table class="formdiv table table-sm table-bordered">
+                    <thead>
+                        <tr class="text-center">
+                            <th colspan="3" scope="col">颜色</th>
+                            <th class="align-middle" rowspan="2" scope="col">比列</th>
+                            <th colspan="6" scope="col">尺码</th>
+                            <th colspan="2" scope="col">数量</th>
+                            <th class="align-middle" rowspan="2" scope="col">操作</th>
+                        </tr>
+                        <!-- for you+all brand -->
+                        {% if order.brand.name == 'You+All'%}
+                            <tr class="text-center">
+                                <th scope="col">中文</th>
+                                <th scope="col">英文</th>
+                                <th scope="col">色号</th>
+                                <th scope="col">16</th>
+                                <th scope="col">18</th>
+                                <th scope="col">20</th>
+                                <th scope="col">22</th>
+                                <th scope="col">24</th>
+                                <th scope="col">26</th>
+                                <th scope="col">中包</th>
+                                <th scope="col">件数</th>
+                            </tr>
+                        {% else %}
+                            {% if order.labeltype == 'NUMBER'%}
+                            <tr class="text-center">
+                                <th scope="col">中文</th>
+                                <th scope="col">英文</th>
+                                <th scope="col">色号</th>
+                                <th scope="col">6</th>
+                                <th scope="col">8</th>
+                                <th scope="col">10</th>
+                                <th scope="col">12</th>
+                                <th scope="col">14</th>
+                                <th scope="col">16</th>
+                                <th scope="col">中包</th>
+                                <th scope="col">件数</th>
+                            </tr>
+                            {% else %}
+                                {% if order.created_date.date < date_allysize.date %}
+                                <tr class="text-center">
+                                    <th scope="col">中文</th>
+                                    <th scope="col">英文</th>
+                                    <th scope="col">色号</th>
+                                    <th scope="col">XS</th>
+                                    <th scope="col">S</th>
+                                    <th scope="col">M</th>
+                                    <th scope="col">L</th>
+                                    <th scope="col">XL</th>
+                                    <th scope="col">XXL</th>
+                                    <th scope="col">中包</th>
+                                    <th scope="col">件数</th>
+                                </tr>
+                                {% else %}
+                                <tr class="text-center">
+                                    <th scope="col">中文</th>
+                                    <th scope="col">英文</th>
+                                    <th scope="col">色号</th>
+                                    <th scope="col">XXS</th>
+                                    <th scope="col">XS</th>
+                                    <th scope="col">S</th>
+                                    <th scope="col">M</th>
+                                    <th scope="col">L</th>
+                                    <th scope="col">XL</th>
+                                    <th scope="col">中包</th>
+                                    <th scope="col">件数</th>
+                                </tr>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    <thead>
+                    <form method="post" novalidate packingtype={{order.packing_type}}>
+                    {% csrf_token %}
+                        <tr class="text-center">
+                            <th scope="col">{% render_field form.color_cn class="form-control"%}</th>
+                            <th scope="col">{% render_field form.color class="form-control"%}</th>
+                            <th scope="col">{% render_field form.color_no class="form-control"%}</th>
+                            <th scope="col">{% render_field form.ratio class="form-control colorqty"%}</th>
+                            <th scope="col">{% render_field form.size1 class="form-control foronepiece"%}</th>
+                            <th scope="col">{% render_field form.size2 class="form-control foronepiece"%}</th>
+                            <th scope="col">{% render_field form.size3 class="form-control foronepiece"%}</th>
+                            <th scope="col">{% render_field form.size4 class="form-control foronepiece"%}</th>
+                            <th scope="col">{% render_field form.size5 class="form-control foronepiece"%}</th>
+                            <th scope="col">{% render_field form.size6 class="form-control foronepiece"%}</th>
+                            <th scope="col">{% render_field form.bags class="form-control colorqty"%}</th>
+                            <th scope="col">{% render_field form.qty class="form-control"%}</th>
+                            <th style="width: 12%" scope="col">
+                            <input  type="submit" value="保存" class="btn  btn-outline-primary">
+                            <a class="btn  btn-outline-primary" href="{% url 'order:orderedit' pk=order.pk%}">返回</a>
+                            </th>
+                        </tr>
+                    </form>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+<script>
+
+    $(document).ready(function(){
+
+        packingtype = $("form").attr('packingtype');
+        if(packingtype=='单件包装'){
+            $("#id_ratio").prop( "disabled", true );
+            $("#id_bags").prop( "disabled", true );
+            $(".foronepiece").change(function(){
+                var size1 = parseInt($("#id_size1").val(), 10) || 0;
+                var size2 = parseInt($("#id_size2").val(), 10) || 0;
+                var size3 = parseInt($("#id_size3").val(), 10) || 0;
+                var size4 = parseInt($("#id_size4").val(), 10) || 0;
+                var size5 = parseInt($("#id_size5").val(), 10) || 0;
+                var size6 = parseInt($("#id_size6").val(), 10) || 0;
+                $("#id_qty").val(size1+size2+size3+size4+size5+size6);
+            })
+        }else{
+            $("#id_ratio").prop( "disabled", false );
+            $("#id_bags").prop( "disabled", false );
+            $(".colorqty").change(function(){
+            var eachbagpcses = 0;
+            var ratio = [];
+            var id_ratio = $('#id_ratio').val();
+            var id_bags = parseInt($("#id_bags").val(), 10) || 0;
+            var re = /^([\d]):([\d]):([\d]):([\d]):([\d]):([\d])$/;
+            var id = this.id;
+
+            if(id=='id_ratio'){
+                if(re.test(id_ratio)){
+                    ratio = id_ratio.split(":");
+                    ratio.forEach(function(num){eachbagpcses+=parseInt(num) || 0;});
+                }
+                else{
+                    $.alert({
+                    title: '提示!',
+                    content: '比列输入格式不符合规范!',
+                    });
+                }
+            }
+            else{
+                if(id_ratio==''){
+                    $.alert({
+                    title: '提示!',
+                    content: '请先输入比例!',
+                    });
+                }
+                else{
+                    ratio = id_ratio.split(":");
+                    ratio.forEach(function(num){eachbagpcses+=parseInt(num) || 0;});
+                    $("#id_size1").val(ratio[0]*id_bags);
+                    $("#id_size2").val(ratio[1]*id_bags);
+                    $("#id_size3").val(ratio[2]*id_bags);
+                    $("#id_size4").val(ratio[3]*id_bags);
+                    $("#id_size5").val(ratio[4]*id_bags);
+                    $("#id_size6").val(ratio[5]*id_bags);
+                    $("#id_qty").val(eachbagpcses*id_bags);
+
+                }
+            }
+        })
+        }
+        }
+        )
+
+</script>
+
+{% endblock%}

@@ -1,0 +1,208 @@
+{% extends 'base_home.html' %}
+
+{% block css%}
+<link href="https://netdna.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.2.0/css/datepicker.min.css" rel="stylesheet">
+{% endblock %}
+
+
+
+{% block content %}
+<div class="col-md-2">
+    <label for="cc-expiration" class="form-label">请选择年份</label>
+    <input type="text" class="form-control" name="datepicker" id="datepicker" />
+    <button type="button" class="btn btn-primary report">生产报告</button>
+  </div>
+
+<div style="position: relative; height:100vh; width:80vw">
+    <canvas id="myChart">
+    </canvas>
+</div>
+{% endblock %}
+
+
+{% block script %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="https://netdna.bootstrapcdn.com/bootstrap/2.3.2/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.2.0/js/bootstrap-datepicker.min.js"></script>
+<script>
+
+var currentTime = new Date()
+var this_year = currentTime.getFullYear()
+
+
+$('#datepicker').val(this_year)
+
+var endpoint_path = '/report/api/factory_qty/data/'
+var endpoint = endpoint_path + this_year
+
+
+$(".report").click(function(event) {
+    var year = $('#datepicker').val();
+
+    var endpoint_path = '/report/api/factory_qty/data/'
+    var endpoint = endpoint_path + year
+
+
+    $.ajax({
+        method: "GET",
+        url: endpoint,
+        success: function(data){
+        setchart(data);
+        },
+        error: function(error_data){
+        }
+    });
+
+});
+
+
+$.ajax({
+    method: "GET",
+    url: endpoint,
+    success: function(data){
+    setchart(data);
+    },
+    error: function(error_data){
+    }
+});
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+       color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+ }
+
+
+function setchart(data) {
+var ctx = document.getElementById("myChart").getContext('2d');
+var myChart = new Chart(ctx, {
+type: 'bar',
+data: {
+    labels: data.labels,
+    datasets: [
+    {
+        label: '刘氏',
+        data: data.datals,
+        fill: true,
+        borderWidth: 2,
+        // backgroundColor: window.chartColors.red,
+        backgroundColor: getRandomColor(),
+        // borderColor: window.chartColors.red,
+    },
+    {
+        label: '标准',
+        data: data.databz,
+        fill: true,
+        borderWidth: 2,
+        // backgroundColor: window.chartColors.red,
+        backgroundColor: getRandomColor(),
+        // borderColor: window.chartColors.red,
+    },
+    {
+        label: '卓品',
+        data: data.datazp,
+        fill: true,
+        borderWidth: 2,
+        // backgroundColor: window.chartColors.red,
+        backgroundColor: getRandomColor(),
+        // borderColor: window.chartColors.red,
+    },
+    {
+        label: '宏业',
+        data: data.datahy,
+        fill: true,
+        borderWidth: 2,
+        // backgroundColor: window.chartColors.red,
+        backgroundColor: getRandomColor(),
+        // borderColor: window.chartColors.red,
+    },
+    {
+        label: '俊和',
+        data: data.datajh,
+        fill: true,
+        borderWidth: 2,
+        // backgroundColor: window.chartColors.red,
+        backgroundColor: getRandomColor(),
+        // borderColor: window.chartColors.red,
+    },
+    {
+        label: '勋成',
+        data: data.datasc,
+        fill: true,
+        borderWidth: 2,
+        // backgroundColor: window.chartColors.red,
+        backgroundColor: getRandomColor(),
+        // borderColor: window.chartColors.red,
+    },
+    {
+        label: '启先',
+        data: data.dataqx,
+        fill: true,
+        borderWidth: 2,
+        // backgroundColor: window.chartColors.red,
+        backgroundColor: getRandomColor(),
+        // borderColor: window.chartColors.red,
+    },
+    {
+        label: '杰森',
+        data: data.datajs,
+        fill: true,
+        borderWidth: 2,
+        // backgroundColor: window.chartColors.red,
+        backgroundColor: getRandomColor(),
+        // borderColor: window.chartColors.red,
+    },
+]
+},
+options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: '工厂接单数量统计'
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: '月份'
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: '单位:件'
+                    },
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+});
+
+}
+
+
+$("#datepicker").datepicker({
+    format: "yyyy",
+    viewMode: "years", 
+    minViewMode: "years",
+    autoclose:true
+}); 
+
+</script>
+{% endblock %}

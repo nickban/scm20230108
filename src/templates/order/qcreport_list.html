@@ -1,0 +1,84 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+
+{% block css%}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+{% endblock %}
+
+{% block content %}
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">创建日期</th>
+      <th scope="col">创建人</th>
+      <th scope="col">订单号</th>
+      <th scope="col">款号</th>
+      <th scope="col">跟单</th>
+      <th scope="col">工厂</th>
+      <th scope="col">大货状态</th>
+      <th scope="col">严重程度统计</th>
+      <th scope="col">报告</th>
+      <th scope="col">状态</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for qcreport in qcreports %}
+    <tr>
+      <td >{{qcreport.created_date |date:"Y/m/d" }}</th>
+      <td>{{qcreport.created_by}}</td>
+      <td>{{qcreport.order.po}}</td>
+      <td>{{qcreport.order.style_no}}</td>
+      <td>{{qcreport.order.merchandiser}}</td>
+      <td>{{qcreport.order.factory}}</td>
+      <td>
+        {% if qcreport.product_status == None %}
+        {% elif qcreport.product_status == NEW_P%}
+        刚出成品
+        {% elif qcreport.product_status == FINISH_P%}
+        成品全部完成
+        {% else %}
+        大货包装完成
+        {% endif %}
+      </td>
+      <td>{{qcreport.get_grade_sum}}</td>
+      <td><a href="{{qcreport.get_absolute_url}}">查看</a></td>
+      <td>{{qcreport.get_status_display}}</td>
+    </tr>
+    {% endfor%}
+  </tbody>
+</table>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+
+<script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js" ></script>
+<script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js" ></script>
+
+<!-- datatable的js设置 -->
+<script>
+$(document).ready( function () {
+  var table =$('.table').DataTable({
+        "language": {
+          "processing": "处理中...",
+          "loadingRecords": "载入中...",
+          "lengthMenu": "显示 _MENU_ 项结果",
+          "zeroRecords": "没有符合的结果",
+          "info": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+          "infoEmpty": "显示第 0 至 0 项结果，共 0 项",
+          "infoFiltered": "(从 _MAX_ 项结果中过滤)",
+          "infoPostFix":  "",
+          "search": "搜索:",
+          "paginate": {
+            "next": "下一页",
+            "previous": "上一页",
+          }, 
+        },
+        "order": [[ 0, 'desc' ],]
+    });
+} );
+</script>
+{% endblock %}

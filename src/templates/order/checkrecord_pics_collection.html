@@ -1,0 +1,53 @@
+{% extends 'base_file_upload.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block css%}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+{% endblock %}
+
+{% block content %}
+<div>
+  <div class="form-group d-flex flex-wrap align-items-end">
+    <p>检查项目:{{checkrecord.check_item.name}}/  编号:{{checkrecord.check_point.number}}/   名称:{{checkrecord.check_point.name}}/  等级:{{checkrecord.get_grade_display}}/    比列:{{checkrecord.ratio}}</p>
+  </div>
+  
+  <div class="form-group d-flex flex-wrap align-items-end">
+    {% for pic in pics %}
+        <a href="{{pic.file.url}}">
+        <img src="{{ pic.file.url}}" width=300 height=300 class="img-thumbnail"></a>    
+        {% if show == 1 %}
+            <a data-title="提示" class="delete" href="{% url 'order:checkrecordpicdelete' pk=pic.pk %}">
+            <i class="mx-2 far fa-trash-alt fa-1x"></i></a> 
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="form-group d-flex flex-wrap align-items-end">
+    <a class="col-3 btn btn-outline-primary" role="button" onclick="window.close();">退出</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<!-- 删除项目确认js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+<script>
+    $('a.delete').confirm({
+        content: "确定要删除此附件吗？",
+        icon: 'fa fa-warning',
+        typeAnimated: true,
+        buttons: {
+        确认: {
+            btnClass: 'btn-default',
+            action:function(){
+            location.href = this.$target.attr('href');
+            },},
+        取消: {
+            action:function () {
+            //close
+            },
+        }}
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,377 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% load basename %}
+{% load crispy_forms_tags %}
+
+{% block css%}
+
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+<!-- 日期选择器，必须在本页面加装js和bootstrap，否则无效 -->
+<link  rel="stylesheet"  type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+<!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous"> -->
+<!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
+<script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+{{ form.media }}
+<!-- 上面的bootstrap把样式改回来了,所以还要再加载一次 -->
+<link rel="stylesheet" href="{% static 'css/user.css' %}">
+
+{% endblock%}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-md-12">
+        {% include 'message.html'%}
+        <div class="col-12">
+            <p style="font-weight: bolder; margin-bottom: 3px;">样板详情页{% if sample %}:{{sample.get_status_display}}{% endif %}</p>
+        </div>
+        <form class="border border-1 p-3 rounded" method="post" novalidate>
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-12 col-md-3 text-left">
+                    <img  class="rounded" src="{{ sample.os_avatar.file.url }}" width=120px height=120px  >
+                </div>
+                <div class="col-12 col-md-3 text-left">
+                    <div class="form-group">
+                        <div class="col-12 text-left pl-0">
+                            <label for="sample_no">样板号:</label>
+                        </div>
+                        <div class="fielddetail col-12  border border-1 rounded text-left">
+                            {{ sample.sample_no}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-12 text-left pl-0">
+                            <label for="sample_no">跟单:</label>
+                        </div>
+                        <div class="fielddetail col-12  border border-1 rounded text-left">
+                            {{ sample.merchandiser}}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <div class="form-group">
+                        <div class="col-12 text-left pl-0">
+                            <label for="sample_no">品牌:</label>
+                        </div>
+                        <div class="fielddetail col-12  border border-1 rounded text-left">
+                            {{ sample.brand}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-12 text-left pl-0">
+                            <label for="sample_no">款式:</label>
+                        </div>
+                        <div style="min-height: 38px"; class="fielddetail col-12  border border-1 rounded text-left">
+                           {% if not sample.style %}
+                            
+                           {% else %}
+                            {{ sample.style}}
+                           {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <div class="form-group">
+                        <div class="col-12 text-left pl-0">
+                            <label for="sample_no">买手:</label>
+                        </div>
+                        <div class="fielddetail col-12  border border-1 rounded text-left">
+                            {{ sample.designer}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div  class="col-12 text-left pl-0">
+                            <label for="sample_no">寄件日期:</label>
+                        </div>
+                        <div style="min-height: 38px"; class="fielddetail col-12  border border-1 rounded text-left">
+                            {{ sample.parcel_date |date:"SHORT_DATE_FORMAT"}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-12 col-md-3">
+                    <i class="fas fa-file-upload fa-2x"></i>
+                    <div class="form-group">
+                        {{ form.has_os_sample |as_crispy_field }}
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <div class="form-group">
+                        <i class="fas fa-file-upload fa-2x"></i>
+                        <span>更多原版照</span>
+                        <div class="form-group">
+                            {% if os_pics %}
+                            <a href="{% url 'sample:sampleattachcollection' pk=sample.pk attachtype='os_pics' %}">
+                            <h6><span class="badge badge-success">查看</span></a></h6>
+                            {% else %}
+                            <h6><span class="badge badge-warning">未上传</span></h6>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 ">
+                    <i class="fas fa-file-upload fa-2x"></i>
+                    <span>评语附件</span>
+                    <div class="form-group">
+                        {% if size_specs %}
+                            <ul class="list-unstyled p-0 list-group list-group-horizontal-lg d-flex flex-wrap">
+                            {% for size_spec in size_specs %}
+                                <li class="bord border-0 mr-3">
+                                    <a href="{{ size_spec.file.url }}">{{ size_spec.file.name |basename }}</a> 
+                                </li>
+                            {% endfor %}
+                            </ul>
+                        {% else %}
+                            <h6><span class="badge badge-warning">未上传</span></h6>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <label for="ateration">做板评语:</label>
+                    <div style="min-height: 120px"; class="fielddetail form-group border border-1 rounded pl-2 pt-2" >
+                        {{sample.alteration | linebreaks}}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-3 ">
+                    <div class="form-group">
+                        <div class="col-12 text-left pl-0">
+                            <label for="sample_no">工厂:</label>
+                        </div>
+                        <div class="fielddetail col-12  pb-1 border border-1 rounded text-left">
+                            {{ sample.factory}}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3 ">
+                    {% if sample.status == 'COMPLETED' %}
+                    <div class="form-group">
+                        <div class="col-12 text-left pl-0">
+                            <label for="sample_no">工厂报价:</label>
+                        </div>
+                        <div style="min-height: 38px"; class="fielddetail col-12  border border-1 rounded text-left">
+                            {% if not sample.qutation %}
+                            {% else %}
+                                {{ sample.qutation}}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                        {% if request.user.is_factory %}
+                        <div class="form-group ">
+                            {{ form.qutation |as_crispy_field }}
+                        </div>
+                        {% else %}
+                        <div class="form-group">
+                            <div class="col-12 text-left pl-0">
+                                <label for="sample_no">工厂报价:</label>
+                            </div>
+                            <div style="min-height: 38px"; class="fielddetail col-12  border border-1 rounded text-left">
+                                {% if not sample.qutation %}
+                                {% else %}
+                                    {{ sample.qutation}}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <div class="col-12 col-md-3 ">
+                    {% if sample.status == 'COMPLETED' %}
+                    <div class="form-group">
+                        <div class="col-12 text-left pl-0">
+                            <label for="sample_no">预计完成日期:</label>
+                        </div>
+                        <div style="min-height: 38px"; class="fielddetail col-12  border border-1 rounded text-left">
+                            {% if not sample.estimate_finish_date %}
+                            {% else %}
+                                {{ sample.estimate_finish_date |date:"SHORT_DATE_FORMAT"}}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                        {% if request.user.is_factory %}
+                        <div class="form-group ">
+                            {{ form.estimate_finish_date |as_crispy_field }}
+                        </div>
+                        {% else %}
+                        <div class="form-group">
+                            <div class="col-12 text-left pl-0">
+                                <label for="sample_no">预计完成日期:</label>
+                            </div>
+                            <div style="min-height: 38px"; class="fielddetail col-12  border border-1 rounded text-left">
+                                {% if not sample.estimate_finish_date %}
+                                {% else %}
+                                    {{ sample.estimate_finish_date |date:"SHORT_DATE_FORMAT"}}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+            </div>
+            <div class="row mt-2">
+                <div class="col-12 col-md-3 ">
+                    <div class="form-group">
+                        {% if not sample.status == 'COMPLETED' %}
+                            <a href="{% url 'sample:sampleattachadd' pk=sample.pk attachtype='swatch'%}" role="button">
+                            <i class="fas fa-file-upload fa-2x"></i></a>
+                        {% else %}
+                            <i class="fas fa-file-upload fa-2x"></i>
+                        {% endif %}
+                        <span>色卡</span>
+                        <div class="form-group">
+                            {% if swatches %}
+                            <a href="{% url 'sample:sampleattachcollection' pk=sample.pk attachtype='swatch'%}">
+                            <h6><span class="badge badge-success">查看</span></a></h6>
+                            {% else %}
+                            <h6><span class="badge badge-warning">未上传</span></h6>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3 ">
+                    <div class="form-group">
+                        {% if not sample.status == 'COMPLETED' %}
+                            <a href="{% url 'sample:sampleattachadd' pk=sample.pk attachtype='fpics'%}" role="button">
+                            <i class="fas fa-file-upload fa-2x"></i></a>
+                        {% else %}
+                            <i class="fas fa-file-upload fa-2x"></i>
+                        {% endif %}
+                        <span>成样照片</span>
+                        <div class="form-group">
+                            {% if fpics %}
+                            <a href="{% url 'sample:sampleattachcollection' pk=sample.pk attachtype='fpics'%}">
+                            <h6><span class="badge badge-success">查看</span></a></h6>
+                            {% else %}
+                            <h6><span class="badge badge-warning">未上传</span></h6>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3 ">
+                    <div class="form-group">
+                        {% if not sample.status == 'COMPLETED' %}
+                            <a href="{% url 'sample:sampleattachadd' pk=sample.pk attachtype='quotation'%}" role="button">
+                            <i class="fas fa-file-upload fa-2x"></i></a>
+                        {% else %}
+                            <i class="fas fa-file-upload fa-2x"></i>
+                        {% endif %}
+                        <span>报价单</span>
+                    </div>
+                    <div class="form-group">
+                        {% if quotation %}
+                        <a href="{{quotation.file.url}}">{{quotation.file.name | basename}}</a>
+                            {% if not sample.status == 'COMPLETED' %}
+                                <a data-title="提示" class="delete" href="{% url 'sample:sampleattachdelete' pk=sample.pk  attachtype='quotation' attach_pk=quotation.pk %}">
+                                <i class="far fa-trash-alt fa-1x"></i></a>
+                            {% endif %}
+                        {% else %}
+                            <h6><span class="badge badge-warning">未上传</span></h6>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-12 col-md-3 ">
+                    <div class="form-group">
+                        {% if not sample.status == 'COMPLETED' %}
+                            <a href="{% url 'sample:sampleattachadd' pk=sample.pk attachtype='sizespecf'%}" role="button">
+                            <i class="fas fa-file-upload fa-2x"></i></a>
+                        {% else %}
+                            <i class="fas fa-file-upload fa-2x"></i>
+                        {% endif %}
+                        <span>成样尺寸表</span>
+                    </div>
+                    <div class="form-group">
+                        {% if sizespecf %}
+                            <a href="{{sizespecf.file.url}}">{{sizespecf.file.name | basename}}</a>
+                            {% if not sample.status == 'COMPLETED' %}
+                                <a data-title="提示" class="delete" href="{% url 'sample:sampleattachdelete' pk=sample.pk  attachtype='sizespecf' attach_pk=sizespecf.pk %}">
+                                <i class="far fa-trash-alt fa-1x"></i></a>
+                            {% endif %}
+                        {% else %}
+                            <h6><span class="badge badge-warning">未上传</span></h6>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+             <div class="row mb-3">
+                {% if not sample.status == 'COMPLETED' %}
+                    {% if request.user.is_factory %}
+                    <div class="col-12 col-md-2 ">
+                        <div class="form-group">
+                            <input type="submit" value="保存" class="btn btn-block btn-outline-primary">
+                        </div>
+                    </div>
+                    {% endif%}
+                {% endif%}
+
+                <div class="col-col-12 col-md-2 ">
+                    <div class="form-group">
+                        {% if sample.status == 'NEW' or sample.status == 'SENT_F'%}
+                        <a class="btn btn-block btn-outline-primary" href="{% url 'sample:samplelistnew' %}" role="button">返回</a>
+                        {% else %}
+                        <a class="btn btn-block btn-outline-primary" href="{% url 'sample:samplelistcompleted' %}" role="button">返回</a>
+                        {% endif %}
+                    </div>
+                </div>
+        
+                <div class=" col-col-12 col-md-2 ">
+                    <div class="form-group">
+                        {% if sample.status == 'COMPLETED'%}
+                            <a href="{% url 'sample:sampledetail' pk=sample.pk %}" class="btn btn-block btn-outline-primary" onclick="window.print()" role="button">打印</a>
+                        {% else %}
+                            {% if request.user.is_merchandiser or  request.user.is_office %}
+                            <a href="{% url 'sample:sampleedit' pk=sample.pk %}" class="btn btn-block btn-outline-primary" onclick="window.print()" role="button">打印</a>
+                            {% else%}
+                            <a href="{% url 'sample:sampledetail' pk=sample.pk %}" class="btn btn-block btn-outline-primary" onclick="window.print()" role="button">打印</a>
+                            {% endif %}
+                        {% endif%}
+                    </div>
+                </div>
+
+                <div class=" col-col-12 col-md-2 ">
+                    {% if not request.user.is_factory %}
+                        <div class="form-group">
+                            <a class="btn btn-block btn-outline-primary" href="{% url 'sample:samplereset' pk=sample.pk%}" role="button">样板重置</a>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<!-- 删除项目确认js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+<script>
+    $('a.delete').confirm({
+        content: "确定要删除此附件吗？",
+        icon: 'fa fa-warning',
+        typeAnimated: true,
+        buttons: {
+        确认: {
+            btnClass: 'btn-default',
+            action:function(){
+            location.href = this.$target.attr('href');
+            },},
+        取消: {
+            action:function () {
+            //close
+            },
+        }}
+    });
+</script>
+
+{% endblock %}

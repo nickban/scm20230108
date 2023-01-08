@@ -1,0 +1,37 @@
+{% extends 'base_home.html' %}
+{% load basename %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block css%}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+<link rel="stylesheet" href="{% static 'css/user.css' %}">
+{% endblock%}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-md-8">
+        <div class="formdiv card">
+            <div class="card-body">
+                <h5 class="card-title text-center">{{ post.title }}</h5>
+                <p class="card-text">{{ post.content | linebreaks}}</p>
+                <p class="text-right">{{ post.create_time|date:"SHORT_DATE_FORMAT"  }}</p>
+                <p class="text-right">{{ post.catagory }}</p>
+            </div>
+            {% if post.postattachments.count %}
+            <div class="card-footer text-right">
+                <label class="card-text">附件</label>
+                <ul class="card-text justify-content-end list-unstyled  list-group list-group-horizontal">
+                    {% for attach in post.postattachments.all %}
+                        <li class="ml-3">
+                            <a href="{{ attach.file.url }}">{{ attach.file.name |basename }}</a> 
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends 'base_home.html' %}
+{% load static %}
+{% load basename %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+
+
+{% block css%}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+<!-- 需要重新加载一次，否则页面颜色显示有点问题 -->
+<link  rel="stylesheet"  type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+<!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous"> -->
+<!-- 日期选择器，必须在本页面加装js和bootstrap，否则无效 -->
+<!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
+<script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+{{ form.media }}
+<!-- 样式被更改，需要重新加载一次用户样式 -->
+<link rel="stylesheet" href="{% static 'css/user.css' %}">
+{% endblock%}
+
+{% block content %}
+<div class="row">
+  <div class="text-center  col-12">
+    <h5><strong>对账单明细</strong></h5>
+    <h5><strong>(Commercial Invoice)</strong></h5>
+    <h6>从{{invoice.start_of_week|date:"SHORT_DATE_FORMAT"}} 到 {{invoice.end_of_week|date:"SHORT_DATE_FORMAT"}}</h6>
+  </div>
+  <hr>
+</div>
+<div class="row">
+  <div class="text-left col-sm-6">
+    <p class="my-1">创建日期:{{invoice.created_date |date:"SHORT_DATE_FORMAT"}}</p>
+    <p class="my-1">发票号:{{invoice.invoice_no}}</p>
+    <p class="my-1">状态:{{invoice.get_status_display}}</p>
+  </div>
+  <div class="text-right col-sm-6">
+    {% if invoice.status == 'PAID'%}
+    <i class="fas fa-file-upload fa-2x"></i>
+    {% else%}
+    <a href="{% url 'order:invoiceattachadd' pk=invoice.pk%}" role="button">
+      <i class="fas fa-file-upload fa-2x"></i></a>
+    {% endif %}
+    <p class="my-1">上传发票</p>
+    {% if invoice.file %}
+    <a href="{{ invoice.file.url }}">{{ invoice.file.name |basename }}</a>
+    {% else %}
+    <h6><span class="badge badge-warning">未上传</span></h6>
+    {% endif %}
+  </div>
+
+</div>
+<hr>
+<div class="row my-3">
+  <div class="col-sm-4">
+    <h6 class=""><strong>供货方(From)</strong></h6>
+    <p class="my-1">工厂名称: {{factory.name}}</p>
+    <p class="my-1">地址: {{factory.address}}</p>
+    <p class="my-1">电话: {{factory.phone}}</p>
+  </div>
+  <div class="col-sm-4">
+    <h6 class=""><strong>银行信息</strong></h6>
+    <p class="my-1">银行账号: {% if factory.bankaccountnumber == None %} 
+                             {% else %}
+                             {{factory.bankaccountnumber}}
+                             {%endif %}</p>
+    <p class="my-1">银行账户: {% if factory.bankaccount == None %} 
+                             {% else %}{{factory.bankaccount}}
+                             {%endif %}</p>
+    <p class="my-1">开户银行: {% if factory.bank == None %} 
+                             {% else %}{{factory.bank}}
+                             {%endif %}</p>
+  </div>
+  <div class="col-sm-4 invoice-col">
+    <h6><strong>采购方(To)</strong></h6>
+    <p class="my-1">公司名称: YUANSE FASHION CO,LTD</p>
+    <p class="my-1">地址: 广州市海珠区新港东路48号雅君花园G4栋801</p>
+    <p class="my-1">电话: 13570975684</p>
+  </div>
+</div>
+<div class="row">
+  <div class="table-responsive">
+    <table  class="my-1 table">
+        <thead>
+          <tr class="text-center">
+            <th scope="col">序号</th>
+            <th scope="col">订单号</th>
+            <th scope="col">款号</th>
+            <th scope="col">品牌</th>
+            <th scope="col">工厂交期</th>
+            <th scope="col">单价</th>
+            <th scope="col">实际出货数</th>
+            <th scope="col">应付金额(人民币)</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for each in qs %}
+          <tr class="text-center">
+            <td>{{ forloop.counter }}</td>
+            <td ><a href="{% url 'order:orderdetail' pk=each.order.pk %}">{{ each.order.po }}</a></td>
+            <td >{{ each.order.style_no }}</td>
+            <td>{{each.order.brand}}</td>
+            <td >{{ each.order.handover_date_f |date:"SHORT_DATE_FORMAT"}}</td>
+            <td >{{ each.order.factory_price}}</td>
+            <td >{{ each.order.actual_ship_qty}}</td>
+            <td >{{ each.paidamount}}</td>
+          </tr>
+        {% endfor %}
+        <tr class="text-center">
+          <th scope="col"></th>
+          <th scope="col"></th>
+          <th scope="col"></th>
+          <th scope="col"></th>
+          <th scope="col"></th>
+          <th scope="col"></th>
+          <th scope="col">应付总额(人民币):</th>
+          <th scope="col">{{ totalpaidamount }}</th>
+        </tr>
+        </tbody>
+    </table>
+  </div>
+</div>
+<div class="mt-5 row">
+    <div class="col-sm ">
+        <div class="form-group">
+          <a class="btn btn-block btn-outline-primary" href="{% url 'order:invoicelist'%}" role="button">返回</a>
+        </div>
+    </div>
+    <div class="col-sm ">
+      <div class="form-group">
+        <a href="" class="btn btn-block btn-outline-primary" onclick="window.print()" role="button">打印</a>
+      </div>
+  </div>
+</div>
+{% endblock %}
